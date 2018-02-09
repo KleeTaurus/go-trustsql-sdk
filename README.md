@@ -1,6 +1,6 @@
 # GoTrustSQL
 
-基于 Golang 语言的 TrustSQL SDK
+基于 Golang 语言的 (TrustSQL)[https://trustsql.qq.com/) SDK
 
 ## 概述
 
