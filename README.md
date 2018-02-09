@@ -20,3 +20,17 @@ SDK API 接口
 1. 数字资产
 2. 信息共享
 3. 身份管理
+
+## 环境依赖
+
+* git
+* go 1.9
+
+## 参考资料
+
+1. [Bitcoin Wiki](https://en.bitcoin.it/wiki/Main_Page)
+2. [Base58Check encoding](https://en.bitcoin.it/wiki/Base58Check_encoding)
+3. [Technical background of version 1 Bitcoin addresses](https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses)
+
+## License
+btckeygenie is MIT licensed. See the included LICENSE file for more details.
