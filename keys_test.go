@@ -1,4 +1,4 @@
-package strustsql
+package trustsql
 
 import (
 	_ "fmt"
