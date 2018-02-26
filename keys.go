@@ -1,103 +1,108 @@
 package trustsql
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"errors"
 	"log"
-	_ "fmt"
-	"golang.org/x/crypto/ripemd160"
-	"math/big"
 
 	secp256k1 "github.com/toxeus/go-secp256k1"
+	"golang.org/x/crypto/ripemd160"
 )
 
-// Base64 编码
-func B64Encode(src []byte) string {
-	return base64.StdEncoding.EncodeToString(src)
-}
-	
-// Base64 解码
-func B64Decode(dst string) []byte {
-	src, _ := base64.StdEncoding.DecodeString(dst)
-	return src
-}
+const version = byte(0x00)
+const addressChecksumLen = 4
+const privateKeyLen = 32
 
-// Base58 编码，参考 https://en.bitcoin.it/wiki/Base58Check_encoding
-func B58Encode(b []byte) string {
-	const BASE58_TABLE = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-
-	/* 转换 big endian 到 big int */
-	x := new(big.Int).SetBytes(b)
-
-	r := new(big.Int)
-	m := big.NewInt(58)
-	zero := big.NewInt(0)
-
-	s := ""
-
-	/* 转换 big int 到字符串 */
-	for x.Cmp(zero) > 0 {
-		x.QuoRem(x, m, r)
-		s = string(BASE58_TABLE[r.Int64()]) + s
-	}
-
-	return s
+// 公私钥对数据结构
+type KeyPair struct {
+	PrivateKey []byte
+	PublicKey  []byte
 }
 
-// 生成指定长度的随机数
-func NewRandomBytes(size int) ([]byte, error) {
-	randBytes := make([]byte, size)
-	_, err := rand.Read(randBytes)
-	if err != nil {
-		return nil, err
-	}
-	return randBytes, nil
+// 生成公私钥对
+func NewKeyPair() *KeyPair {
+	privateKey, publicKey := newKeyPair()
+	keyPair := KeyPair{privateKey, publicKey}
+
+	return &keyPair
 }
 
-// 生成私钥
-func NewPrivateKey() []byte {
-	bytes, err := NewRandomBytes(32)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return bytes
-}
-
-// 根据私钥生成公钥
+// 根据私钥计算公钥
 func GetPublicKey(privateKey []byte) ([]byte, error) {
-	var dupPrivateKey [32]byte
-	for i := 0; i < 32; i++ {
-		dupPrivateKey[i] = privateKey[i]
-	}
+	var dupPrivateKey [privateKeyLen]byte
+	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
 
 	secp256k1.Start()
 	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, false)
 	if !success {
-		return nil, errors.New("Failed to create public key from provided private key.")
+		return nil, errors.New("Failed to create public key from the provided private key.")
 	}
 	secp256k1.Stop()
 
 	return publicKey, nil
 }
 
-// 根据公钥生成地址
-func GetAddress(publicKey []byte) string {
-	hashSha256 := sha256.Sum256(publicKey)
+// 计算公钥对应的地址
+func (k KeyPair) GetAddress() []byte {
+	publicKeyHash := HashPublicKey(k.PublicKey)
 
-	ripemd := ripemd160.New()
-	ripemd.Reset()
-	ripemd.Write(hashSha256[:])
-	hashRipemd160 := ripemd.Sum(nil)
+	// https: //en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
+	// 此处为原比特币实现方式
+	/*
+		versionPayload := append([]byte{version}, publicKeyHash...)
+		checksum := checksum(versionPayload)
+	*/
 
-	hashTwiceSha256 := sha256.Sum256(hashRipemd160)
-	hashTwiceSha256 = sha256.Sum256(hashTwiceSha256[:])
+	// TrustSQL 在计算公钥地址时未采用比特币标准计算方式，而是先对公钥进
+	// 行双哈希运算然后再对拼接后的字符数组进行 Base58 编码
+	// 字符数组格式: version(1 byte) + ripemd160(20 bytes) + checksum(4 bytes)
 
-	result := make([]byte, 1)
-	result = append(result, hashRipemd160...)
+	checksum := checksum(publicKeyHash)
 
-	result = append(result, hashTwiceSha256[:4]...)
-	return "1" + B58Encode(result)
+	versionPayload := append([]byte{version}, publicKeyHash...)
+	fullPayload := append(versionPayload, checksum...)
+	address := Base58Encode(fullPayload)
+
+	return address
 }
 
+// 哈希公钥
+func HashPublicKey(publicKey []byte) []byte {
+	publicKeySHA256 := sha256.Sum256(publicKey)
+
+	RIPEMD160Hasher := ripemd160.New()
+	_, err := RIPEMD160Hasher.Write(publicKeySHA256[:])
+	if err != nil {
+		log.Panic(err)
+	}
+	publicKeyRIPEMD160 := RIPEMD160Hasher.Sum(nil)
+
+	return publicKeyRIPEMD160
+}
+
+// 生成公私钥对
+func newKeyPair() ([]byte, []byte) {
+	curve := elliptic.P256()
+	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	publicKey, err := GetPublicKey(privateKey.D.Bytes())
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return privateKey.D.Bytes(), publicKey
+}
+
+// 计算公钥校验码
+func checksum(payload []byte) []byte {
+	firstSHA := sha256.Sum256(payload)
+	secondSHA := sha256.Sum256(firstSHA[:])
+
+	return secondSHA[:addressChecksumLen]
+}
