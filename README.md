@@ -23,8 +23,8 @@ SDK API 接口
 
 ## 环境依赖
 
-* git
 * go 1.9
+* [github.com/toxeus/go-secp256k1](https://github.com/toxeus/go-secp256k1) 需要单独安装
 
 ## 参考资料
 
