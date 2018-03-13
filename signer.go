@@ -5,13 +5,14 @@ import (
 	"crypto/elliptic"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"math/big"
 
 	secp256k1 "github.com/toxeus/go-secp256k1"
 )
 
+// Sign 签名
 func Sign(privateKey []byte, data []byte) string {
+	secp256k1.Start()
 	// privKey := PrivateKeyFromBytes(privateKey)
 	dataSHA256 := sha256.Sum256(data)
 
@@ -25,14 +26,17 @@ func Sign(privateKey []byte, data []byte) string {
 
 	// val, success := secp256k1.Sign(dataSHA256, privateKey, nil)
 	var dupPrivKey [32]byte
-	copy(privateKey[:], dupPrivKey[:32])
-	val, success := secp256k1.Sign(dataSHA256, dupPrivKey, nil)
-	fmt.Println(val)
-	fmt.Println(success)
-
-	fmt.Println("sign:", base64.StdEncoding.EncodeToString(val))
-	// return string(signature)
+	copy(dupPrivKey[:32], privateKey[:])
+	val, _ := secp256k1.Sign(dataSHA256, dupPrivKey, nil)
+	secp256k1.Stop()
 	return string(base64.StdEncoding.EncodeToString(val))
+}
+
+// Verify 验证签名
+func Verify(pubkey, sig, data []byte) bool {
+	secp256k1.Start()
+	dataSHA256 := sha256.Sum256(data)
+	return secp256k1.Verify(dataSHA256, sig, pubkey)
 }
 
 func PrivateKeyFromBytes(privateKey []byte) *ecdsa.PrivateKey {
