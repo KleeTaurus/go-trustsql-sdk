@@ -39,6 +39,7 @@ func Verify(pubkey, sig, data []byte) bool {
 	return secp256k1.Verify(dataSHA256, sig, pubkey)
 }
 
+// PrivateKeyFromBytes 根据[]byte构造返回ecdsa私钥
 func PrivateKeyFromBytes(privateKey []byte) *ecdsa.PrivateKey {
 	curve := elliptic.P256()
 	x, y := curve.ScalarBaseMult(privateKey)

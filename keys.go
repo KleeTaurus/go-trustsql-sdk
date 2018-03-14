@@ -16,13 +16,13 @@ const version = byte(0x00)
 const addressChecksumLen = 4
 const privateKeyLen = 32
 
-// 公私钥对数据结构
+// KeyPair 公私钥对数据结构
 type KeyPair struct {
 	PrivateKey []byte
 	PublicKey  []byte
 }
 
-// 生成公私钥对
+// NewKeyPair 生成公私钥对
 func NewKeyPair() *KeyPair {
 	privateKey, publicKey := newKeyPair()
 	keyPair := KeyPair{privateKey, publicKey}
@@ -30,7 +30,7 @@ func NewKeyPair() *KeyPair {
 	return &keyPair
 }
 
-// 根据私钥计算公钥
+// GetPublicKey 根据私钥计算公钥
 func GetPublicKey(privateKey []byte) ([]byte, error) {
 	var dupPrivateKey [privateKeyLen]byte
 	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
@@ -45,7 +45,7 @@ func GetPublicKey(privateKey []byte) ([]byte, error) {
 	return publicKey, nil
 }
 
-// 计算公钥对应的地址
+// GetAddress 计算公钥对应的地址
 func (k KeyPair) GetAddress() []byte {
 	publicKeyHash := HashPublicKey(k.PublicKey)
 
@@ -69,7 +69,7 @@ func (k KeyPair) GetAddress() []byte {
 	return address
 }
 
-// 哈希公钥
+// HashPublicKey 哈希公钥
 func HashPublicKey(publicKey []byte) []byte {
 	publicKeySHA256 := sha256.Sum256(publicKey)
 

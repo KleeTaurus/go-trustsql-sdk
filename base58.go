@@ -7,7 +7,7 @@ import (
 
 var b58Alphabet = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 
-// 对输入数据做 Base58 编码
+// Base58Encode 对输入数据做 Base58 编码
 func Base58Encode(input []byte) []byte {
 	var result []byte
 
@@ -32,7 +32,7 @@ func Base58Encode(input []byte) []byte {
 	return result
 }
 
-// 对编码格式为 Base58 的输入数据做解码操作
+// Base58Decode 对编码格式为 Base58 的输入数据做解码操作
 func Base58Decode(input []byte) []byte {
 	result := big.NewInt(0)
 
