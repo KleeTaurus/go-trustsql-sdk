@@ -1,11 +1,13 @@
-# GoTrustSQL
+GoTrustSQL
+=======
+
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/KleeTaurus/go-trustsql-sdk/blob/master/LICENSE)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/KleeTaurus/go-trustsql-sdk)
+
 基于 Golang 语言的 [TrustSQL](https://trustsql.qq.com/) SDK
 
 ## 概述
 该 SDK 实现了底层密钥对生成、地址生成、签名/验签等基础功能，后期会对 TrustSQL 提供的 API 接口进行封装。
-
-## 详细接口文档
-[go doc](https://godoc.org/github.com/KleeTaurus/go-trustsql-sdk)
 
 ## 特性
 SDK 基础命令
