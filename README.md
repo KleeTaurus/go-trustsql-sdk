@@ -30,9 +30,10 @@ SDK API 接口
 ## 参考资料
 1. [Bitcoin Wiki](https://en.bitcoin.it/wiki/Main_Page)
 2. [Base58Check encoding](https://en.bitcoin.it/wiki/Base58Check_encoding)
-3. [Technical background of version 1 Bitcoin addresses](https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses)
-4. [Merkle Trees](https://hackernoon.com/merkle-trees-181cb4bc30b4)
-5. [数据库那么便宜，为何还要死贵的区块链来存储数据？](https://mp.weixin.qq.com/s/ME_E1EA95XILD_yaFg1d8Q)
+3. [Bitcoin Developer Reference](https://bitcoin.org/en/developer-reference#block-chain)
+4. [Technical background of version 1 Bitcoin addresses](https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses)
+5. [Merkle Trees](https://hackernoon.com/merkle-trees-181cb4bc30b4)
+6. [数据库那么便宜，为何还要死贵的区块链来存储数据？](https://mp.weixin.qq.com/s/ME_E1EA95XILD_yaFg1d8Q)
 
 ## License
 GoTrustSQL is MIT licensed. See the included LICENSE file for more details.
