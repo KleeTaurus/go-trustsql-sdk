@@ -22,31 +22,31 @@ type KeyPair struct {
 	PublicKey  []byte
 }
 
-// NewKeyPair 生成公私钥对
-func NewKeyPair() *KeyPair {
+// GeneratePairkey 生成公私钥对
+func GeneratePairkey() *KeyPair {
 	privateKey, publicKey := newKeyPair()
 	keyPair := KeyPair{privateKey, publicKey}
 
 	return &keyPair
 }
 
-// GetPublicKey 根据私钥计算公钥
-func GetPublicKey(privateKey []byte) ([]byte, error) {
+// GeneratePubkeyByPrvkey 根据私钥计算公钥
+func GeneratePubkeyByPrvkey(privateKey []byte) ([]byte, error) {
 	var dupPrivateKey [privateKeyLen]byte
 	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
 
 	secp256k1.Start()
 	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, false)
 	if !success {
-		return nil, errors.New("Failed to create public key from the provided private key.")
+		return nil, errors.New("failed to create public key from the provided private key")
 	}
 	secp256k1.Stop()
 
 	return publicKey, nil
 }
 
-// GetAddress 计算公钥对应的地址
-func (k KeyPair) GetAddress() []byte {
+// GenerateAddrByPubkey 计算公钥对应的地址
+func (k KeyPair) GenerateAddrByPubkey() []byte {
 	publicKeyHash := HashPublicKey(k.PublicKey)
 
 	// https: //en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
@@ -91,7 +91,7 @@ func newKeyPair() ([]byte, []byte) {
 		log.Panic(err)
 	}
 
-	publicKey, err := GetPublicKey(privateKey.D.Bytes())
+	publicKey, err := GeneratePubkeyByPrvkey(privateKey.D.Bytes())
 	if err != nil {
 		log.Panic(err)
 	}
