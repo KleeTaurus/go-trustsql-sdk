@@ -3,10 +3,42 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "uC0/YlX5RUmxgBWUtR8J2QBWEIo=",
+			"path": "github.com/go-playground/locales",
+			"revision": "e4cbcb5d0652150d40ad0646651076b6bd2be4f6",
+			"revisionTime": "2017-10-14T05:53:35Z"
+		},
+		{
+			"checksumSHA1": "YWIa2z/i81ttb1Db9fm95XnIgwI=",
+			"path": "github.com/go-playground/locales/currency",
+			"revision": "e4cbcb5d0652150d40ad0646651076b6bd2be4f6",
+			"revisionTime": "2017-10-14T05:53:35Z"
+		},
+		{
+			"checksumSHA1": "7QcjNTtW0Rc/5BPw1MPaQ6YNjso=",
+			"path": "github.com/go-playground/universal-translator",
+			"revision": "71201497bace774495daed26a3874fd339e0b538",
+			"revisionTime": "2017-03-27T19:17:03Z"
+		},
+		{
+			"path": "github.com/go-playground/validator",
+			"revision": ""
+		},
+		{
+			"path": "github.com/go-playground/validator.v9",
+			"revision": ""
+		},
+		{
 			"checksumSHA1": "TQoVgHqUD72/5ALzi9p5W3oyaug=",
 			"path": "golang.org/x/crypto/ripemd160",
 			"revision": "182114d582623c1caa54f73de9c7224e23a48487",
 			"revisionTime": "2018-03-12T18:51:34Z"
+		},
+		{
+			"checksumSHA1": "rzUabaeHS5A1JgT8+zGqy8MSeag=",
+			"path": "gopkg.in/go-playground/validator.v9",
+			"revision": "8ce234ff024d85b3848e485decba806385d6e276",
+			"revisionTime": "2018-03-19T15:47:08Z"
 		}
 	],
 	"rootPath": "github.com/KleeTaurus/go-trustsql-sdk"
