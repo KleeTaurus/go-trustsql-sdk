@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -36,13 +37,14 @@ func TestCommonValidate(t *testing.T) {
 }
 
 func TestRegisteUser(t *testing.T) {
+	k := tscec.GeneratePairkey()
 	c := common()
 	u := &UserRegister{
 		UserID:       "1111111",
 		PublicKey:    "2222222",
 		UserFullName: "3333333333",
 	}
-	_, err := RegisteUser(u, c)
+	_, err := RegisteUser(u, c, k)
 	if err != nil {
 		fmt.Println(err)
 	}
