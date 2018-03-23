@@ -1,4 +1,4 @@
-package trustsql
+package tscec
 
 import (
 	"bytes"

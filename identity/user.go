@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -50,11 +51,11 @@ const (
 
 // Common 公共信息
 type Common struct {
-	MchID       string `json:"mch_id"       validate:"required,len=12"`
-	ProductCode string `json:"product_code" validate:"required,len=12"`
-	SeqNo       string `json:"seq_no"       validate:"required,len=32"`
-	Sign        string `json:"sign"         validate:"required,len=64"`
-	Type        string `json:"type"         validate:"required,len=12"`
+	MchID       string `json:"mch_id"       validate:"required"`
+	ProductCode string `json:"product_code" validate:"required"`
+	SeqNo       string `json:"seq_no"       validate:"required"`
+	Sign        string `json:"sign"         validate:"required"`
+	Type        string `json:"type"         validate:"required"`
 	TimeStamp   int64  `json:"time_stamp"   validate:"required"`
 	ReqData     string `json:"req_data"     validate:"required"`
 }
@@ -78,6 +79,7 @@ func (u *UserRegister) lint(c *Common) string {
 	lintString := ""
 	first := true
 	for k := range keys {
+		// TODO check if value is empty
 		if !first {
 			lintString = lintString + "&" + keys[k] + "=" + signMap[keys[k]]
 		} else {
@@ -108,14 +110,15 @@ func getCheckString(m *map[string]string, v reflect.Value) {
 }
 
 // RegisteUser 注册用户
-func RegisteUser(u *UserRegister, c *Common) ([]byte, error) {
+func RegisteUser(u *UserRegister, c *Common, k *tscec.KeyPair) ([]byte, error) {
 	data, err := json.Marshal(u)
 	c.ReqData = string(data)
 	sign := u.lint(c)
 	if err != nil {
 		return nil, err
 	}
-	c.Sign = sign
+	c.Sign = k.SignString(sign)
+
 	reqData, err := json.Marshal(c)
 	if err != nil {
 		return nil, err
