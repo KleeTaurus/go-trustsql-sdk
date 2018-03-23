@@ -1,14 +1,7 @@
 package identity
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
-	"log"
 	"net/http"
-	"reflect"
-	"sort"
-	"strconv"
 	"time"
 
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
@@ -27,18 +20,9 @@ func init() {
 	validate = validator.New()
 }
 
-// Linter 接口封装了请求餐具数据拼接要求
-// 1.参数名ASCII码从小到大排序（字典序）；
-// 2.如果参数的值为空不参与签名；
-// 3.参数名区分大小写；
-type Linter interface {
-	Lint(c Common) (string, error)
-}
-
 const (
 	// RegisteUserURI 注册用户
-	// RegisteUserURI = "https://baas.trustsql.qq.com/idm_v1/api/user_cert/register"
-	RegisteUserURI = "http://39.107.26.141:8004/post"
+	RegisteUserURI = "https://baas.trustsql.qq.com/idm_v1/api/user_cert/register"
 	// GetUserInfoURI 获取用户信息
 	GetUserInfoURI = "https://baas.trustsql.qq.com/idm_v1/api/user_cert/fetch"
 	// RegisteAccountURI 创建用户账户
@@ -67,104 +51,54 @@ type UserRegister struct {
 	UserFullName string `json:"user_fullName"  validate:"required"`
 }
 
-func (u *UserRegister) lint(c *Common) string {
-	signMap := make(map[string]string)
-	getCheckString(&signMap, reflect.ValueOf((*u)))
-	getCheckString(&signMap, reflect.ValueOf((*c)))
-	var keys []string
-	for k := range signMap {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	lintString := ""
-	first := true
-	for k := range keys {
-		// TODO check if value is empty
-		if !first {
-			lintString = lintString + "&" + keys[k] + "=" + signMap[keys[k]]
-		} else {
-			lintString = keys[k] + "=" + signMap[keys[k]]
-		}
-		first = false
-	}
-	log.Printf("lintString is %s", lintString)
-	return lintString
-}
-
-func getCheckString(m *map[string]string, v reflect.Value) {
-	for i := 0; i < v.NumField(); i++ {
-		if "sign" == v.Type().Field(i).Tag.Get("json") {
-			continue
-		}
-		tag := v.Type().Field(i).Tag.Get("json")
-		switch v.Field(i).Kind() {
-		case reflect.Int64:
-			{
-				(*m)[tag] = strconv.FormatInt(v.Field(i).Interface().(int64), 10)
-				continue
-			}
-		}
-
-		(*m)[tag] = v.Field(i).Interface().(string)
-	}
-}
-
 // RegisteUser 注册用户
-func RegisteUser(u *UserRegister, c *Common, k *tscec.KeyPair) ([]byte, error) {
-	data, err := json.Marshal(u)
-	c.ReqData = string(data)
-	sign := u.lint(c)
-	if err != nil {
-		return nil, err
-	}
-	c.Sign = k.SignString(sign)
-
-	reqData, err := json.Marshal(c)
-	if err != nil {
-		return nil, err
-	}
-
-	// 校验common是否符合标准
-	err = validate.Struct(c)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Printf("RegisteUser req data is %s", string(reqData))
-
-	// send http request
-	req, err := http.NewRequest("POST", RegisteUserURI, bytes.NewBuffer(reqData))
-	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	if err != nil {
-		return nil, err
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	log.Printf("RegisteUser response body is %s", string(body))
-	_ = resp.Body.Close()
-	return body, nil
+func RegisteUser(u UserRegister, c Common, k tscec.KeyPair) ([]byte, error) {
+	return send(RegisteUserURI, u, c, k)
 }
 
-// parseBody 处理response body
-func parseBody(body []byte) {
-
+// UserInfo 获取用户信息参数
+type UserInfo struct {
+	UserID string `json:"user_id" validate:"required"`
 }
 
-// GetUserInfo 获取用户信息
-func GetUserInfo() {
+// GetUserInfo 获取用户信息参数
+func GetUserInfo(u UserInfo, c Common, k tscec.KeyPair) ([]byte, error) {
+	return send(GetUserInfoURI, u, c, k)
+}
+
+// Account 创建用户账户参数
+type Account struct {
+	UserID    string `json:"user_id"        validate:"required"`
+	PublicKey string `json:"public_key"     validate:"required"`
 }
 
 // RegisteAccount 创建用户账户
-func RegisteAccount() {
+func RegisteAccount(u Account, c Common, k tscec.KeyPair) ([]byte, error) {
+	return send(RegisteAccountURI, u, c, k)
+}
+
+// Accounts 获取用户的账户地址列表参数
+type Accounts struct {
+	UserID    string `json:"user_id"        validate:"required"`
+	State     string `json:"state"          validate:"omitempty"`
+	BeginTime string `json:"begin_time"     validate:"omitempty"`
+	EndTime   string `json:"end_time"       validate:"omitempty"`
+	Page      int    `json:"page"           validate:"omitempty"`
+	Limit     int    `json:"limit"          validate:"omitempty"`
 }
 
 // GetAccounts 获取用户的账户地址列表
-func GetAccounts() {
+func GetAccounts(u Accounts, c Common, k tscec.KeyPair) ([]byte, error) {
+	return send(GetAccountsURI, u, c, k)
+}
+
+// PubkeyOfAccount 获取用户的账户公钥参数
+type PubkeyOfAccount struct {
+	UserID         string `json:"user_id"         validate:"required"`
+	AccountAddress string `json:"account_address" validate:"required"`
 }
 
 // GetPubkeyOfAccount 获取用户的账户公钥
-func GetPubkeyOfAccount() {
+func GetPubkeyOfAccount(u PubkeyOfAccount, c Common, k tscec.KeyPair) ([]byte, error) {
+	return send(GetPubkeyOfAccountURI, u, c, k)
 }
