@@ -60,3 +60,30 @@ func PrivateKeyFromBytes(privateKey []byte) *ecdsa.PrivateKey {
 
 	return privKey
 }
+
+// IssSign 生成一个用于共享信息的签名.
+// @param infoKey          自定义的信息单号
+// @param infoVersion      共享信息版本
+// @param state            共享信息状态编码
+// @param content          存放content的json格式字段
+// @param notes            存放notes的json格式字段
+// @param commitTime       提交共享信息时间 格式为YYYY-MM-DD HH:mm:
+// @param privateKey       存放共享信息发起方的私钥 长度必须为PRVKEY_DIGEST_LENGTH
+// @return                 返回签名
+func IssSign(infoKey, infoVersion, content, notes, commitTime, privateKey string, state int) string {
+	return ""
+}
+
+// IssVerifySign           验证一个共享信息的签名.
+// @param infoKey          自定义的信息单号
+// @param infoVersion      共享信息版本
+// @param state            共享信息状态编码
+// @param content          存放content的json格式字段
+// @param notes            存放notes的json格式字段
+// @param commitTime       提交共享信息时间 格式为YYYY-MM-DD HH:mm:SS
+// @param pubkey           存放共享信息发起方的公钥 长度必须为PUBKEY_DIGEST_LENGTH
+// @param sign             存放签名 长度必须为SIGN_DIGEST_LENGTH
+// @return                 返回验证签名结果
+func IssVerifySign(infoKey, infoVersion, content, notes, commitTime, pubkey, sign string, state int) bool {
+	return true
+}
