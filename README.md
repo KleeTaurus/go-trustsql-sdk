@@ -34,6 +34,7 @@ SDK API 接口
 4. [Technical background of version 1 Bitcoin addresses](https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses)
 5. [Merkle Trees](https://hackernoon.com/merkle-trees-181cb4bc30b4)
 6. [数据库那么便宜，为何还要死贵的区块链来存储数据？](https://mp.weixin.qq.com/s/ME_E1EA95XILD_yaFg1d8Q)
+7. [Data Insertion in Bitcoin's Blockchain](https://digitalcommons.augustana.edu/cgi/viewcontent.cgi?article=1000&context=cscfaculty)
 
 ## License
 GoTrustSQL is MIT licensed. See the included LICENSE file for more details.
