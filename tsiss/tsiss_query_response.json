@@ -1,0 +1,58 @@
+{
+    "retcode": "0",
+    "retmsg": "OK",
+    "infos": [
+        {
+            "info_key": "UlegalFri Aug 11 16:08:15 CST 2017",
+            "info_version": "1",
+            "state": "2",
+            "content": {
+                "owner": "ulegal",
+                "source": "ulegal",
+                "hashValue": "c630aaa58fef9a453c9fba6c1f71c5f984ac0199144bba0f8f8c3b7b5ef82386"
+            },
+            "notes": {
+                "extInfo": "default"
+            },
+            "commit_time": "2017-08-11 16:08:15",
+            "account": "157o8FzGFAeo3xnkvYskSwfgTarZZjwBNa",
+            "public_key": "BOj8B7xi4997gGx6hjTx+ID7KFSCtjTy594D7XmY32Or80Z5Z5DnM6sEJqyKP4QKJOPtxqNW+HdVHU48R9G5Ndw=",
+            "sign": "MEQCIFnQp35qMb6B2kSbYALA9sjMNyQJeUSkPPALJpzk8T7kAiBXmiNJXzm1Ot4tz7h7bN55sUHE+vqmO3KvHgJZ+zPDaA==",
+            "t_hash": "8197583ab3a59216b2fcecc663b2dddddaa6d14042f1a3c3722fa1cbf59e5b27",
+            "b_height": "15367",
+            "b_prev_hash": "66f9ecfe6f58ab6b56e1225e7337e1f25f03aa4b12ec4d6de8051526938cc893",
+            "b_hash": "3d80a2c5c10d3530fa0a19e30ccb8a480457558d567338d784630b52909a3e94",
+            "b_time": "2017-08-11 16:08:15",
+            "sign_verify": true
+        },
+        {
+            "info_key": "UlegalFri Aug 11 16:08:14 CST 2017",
+            "info_version": "1",
+            "state": "2",
+            "content": {
+                "owner": "ulegal",
+                "source": "ulegal",
+                "hashValue": "c630aaa58fef9a453c9fba6c1f71c5f984ac0199144bba0f8f8c3b7b5ef82386"
+            },
+            "notes": {
+                "extInfo": "default"
+            },
+            "commit_time": "2017-08-11 16:08:14",
+            "account": "157o8FzGFAeo3xnkvYskSwfgTarZZjwBNa",
+            "public_key": "BOj8B7xi4997gGx6hjTx+ID7KFSCtjTy594D7XmY32Or80Z5Z5DnM6sEJqyKP4QKJOPtxqNW+HdVHU48R9G5Ndw=",
+            "sign": "MEUCIQCKiN/7zEK7/fE4ULRlAgvwrMod+tIjr/CoXJwLXjGxFgIgUyrIWauQ9R9kVXewxHj5skhjy/cVDmhC8p1TEx4zJl8=",
+            "t_hash": "6fdc8a97f1c36123c270d4e0ac2a43a5a72a2c76bf0c402da827c855a86e3b3d",
+            "b_height": "15366",
+            "b_prev_hash": "895d84b2ce38c192054fb71ae559e44f1d1608cbf321d24f8698bc2f6d72c9d3",
+            "b_hash": "66f9ecfe6f58ab6b56e1225e7337e1f25f03aa4b12ec4d6de8051526938cc893",
+            "b_time": "2017-08-11 16:08:14",
+			      "sign_verify": true
+		    }
+	  ],
+	  "mch_id": "trust_infoshare",
+	  "mch_sign": "MEUCIQCoiRmDkdatPZp5n2UJ9CJVkKhifF9YXT+eIK0WK9I38QIgEdTx7Zb7HNCKVW/owCMmhgwPdET32sDVkO8FMyCU1r8=",
+	  "sign_type": "ECDSA",
+	  "total_infos": "827",
+	  "version": "1.0",
+	  "mch_sign_verify": true
+}
