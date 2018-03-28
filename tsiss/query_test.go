@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGetPubkeyOfAccount(t *testing.T) {
+func TestQueryIss(t *testing.T) {
 	issQuery := IssQuery{
 		Version:   "1.0",
 		SignType:  "ECDSA",
@@ -17,15 +17,15 @@ func TestGetPubkeyOfAccount(t *testing.T) {
 		Timestamp: 1503648096,
 		NodeID:    "cc",
 	}
-	_, err := QueryIss(issQuery)
+	iss, err := QueryIss(issQuery)
 	if err != nil {
 		t.Error(err)
 	}
-	// fmt.Println(body)
+	t.Log(iss.Infos[0].Content)
 }
 
 func TestIssResponse(t *testing.T) {
-	dat, err := ioutil.ReadFile("tsiss_query_response.json")
+	dat, err := ioutil.ReadFile("test_data/query_response.json")
 	if err != nil {
 		t.Error(err)
 	}
