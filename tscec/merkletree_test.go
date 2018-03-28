@@ -39,4 +39,5 @@ func TestMerkleTree(t *testing.T) {
 	fmt.Println("Verify Content:", vc)
 
 	fmt.Println(tree)
+	fmt.Println(tree.LeafsHash())
 }

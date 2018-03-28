@@ -3,26 +3,26 @@ package tscec
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 )
 
-// Content MerkleTree 中的叶子节点内容
+// Content MerkleTree 中叶子节点对应的存储内容
 type Content interface {
 	CalculateHash() []byte
 	Equals(other Content) bool
 }
 
-//MerkleTree is the container for the tree. It holds a pointer to the root of the tree,
-//a list of pointers to the leaf nodes, and the merkle root.
+// MerkleTree 用于存储哈希树的根节点、merkleRoot 值及所有叶子节点列表
 type MerkleTree struct {
 	Root       *Node
 	merkleRoot []byte
 	Leafs      []*Node
 }
 
-//Node represents a node, root, or leaf in the tree. It stores pointers to its immediate
-//relationships, a hash, the content stored if it is a leaf, and other metadata.
+// Node MerkleTree 中的节点，包括：叶子节点、中间节点或根节点
 type Node struct {
 	Parent *Node
 	Left   *Node
@@ -33,13 +33,12 @@ type Node struct {
 	C      Content
 }
 
-// 对 Node 进行格式化输出
+// String 对 Node 节点进行格式化输出
 func (n Node) String() string {
-	return fmt.Sprintf("Hash: %x, Value: %s", n.Hash, n.C)
+	return fmt.Sprintf("Hash: %x, Leaf: %t, Value: %v", n.Hash, n.leaf, n.C)
 }
 
-//verifyNode walks down the tree until hitting a leaf, calculating the hash at each level
-//and returning the resulting hash of Node n.
+// verifyNode 验证当前节点下所有子节点的哈希值
 func (n *Node) verifyNode() []byte {
 	if n.leaf {
 		return n.C.CalculateHash()
@@ -49,7 +48,7 @@ func (n *Node) verifyNode() []byte {
 	return h.Sum(nil)
 }
 
-//calculateNodeHash is a helper function that calculates the hash of the node.
+// calculateNodeHash 计算当前节点的哈希值
 func (n *Node) calculateNodeHash() []byte {
 	if n.leaf {
 		return n.C.CalculateHash()
@@ -59,7 +58,7 @@ func (n *Node) calculateNodeHash() []byte {
 	return h.Sum(nil)
 }
 
-//NewTree creates a new Merkle Tree using the content cs.
+// NewTree 使用 cs 构建一个 MerkleTree
 func NewTree(cs []Content) (*MerkleTree, error) {
 	root, leafs, err := buildWithContent(cs)
 	if err != nil {
@@ -73,9 +72,7 @@ func NewTree(cs []Content) (*MerkleTree, error) {
 	return t, nil
 }
 
-//buildWithContent is a helper function that for a given set of Contents, generates a
-//corresponding tree and returns the root node, a list of leaf nodes, and a possible error.
-//Returns an error if cs contains no Contents.
+// buildWithContent 根据传入的 cs 构建完整的 MerkleTree（cs 为空时返回错误）
 func buildWithContent(cs []Content) (*Node, []*Node, error) {
 	if len(cs) == 0 {
 		return nil, nil, errors.New("Error: cannot construct tree with no content.")
@@ -101,8 +98,7 @@ func buildWithContent(cs []Content) (*Node, []*Node, error) {
 	return root, leafs, nil
 }
 
-//buildIntermediate is a helper function that for a given list of leaf nodes, constructs
-//the intermediate and root levels of the tree. Returns the resulting root node of the tree.
+// buildIntermediate 根据传入的叶子节点列表构建完整的 MerkleTree
 func buildIntermediate(nl []*Node) *Node {
 	var nodes []*Node
 	for i := 0; i < len(nl); i += 2 {
@@ -128,13 +124,12 @@ func buildIntermediate(nl []*Node) *Node {
 	return buildIntermediate(nodes)
 }
 
-//MerkleRoot returns the unverified Merkle Root (hash of the root node) of the tree.
+// MerkleRoot 获取 MerkleTree 根节点哈希
 func (m *MerkleTree) MerkleRoot() []byte {
 	return m.merkleRoot
 }
 
-//RebuildTree is a helper function that will rebuild the tree reusing only the content that
-//it holds in the leaves.
+// RebuildTree 使用现有叶子节点重新构建 MerkleTree
 func (m *MerkleTree) RebuildTree() error {
 	var cs []Content
 	for _, c := range m.Leafs {
@@ -150,9 +145,7 @@ func (m *MerkleTree) RebuildTree() error {
 	return nil
 }
 
-//RebuildTreeWith replaces the content of the tree and does a complete rebuild; while the root of
-//the tree will be replaced the MerkleTree completely survives this operation. Returns an error if the
-//list of content cs contains no entries.
+// RebuildTreeWith 使用传入的 cs 重新构建 MerkleTree
 func (m *MerkleTree) RebuildTreeWith(cs []Content) error {
 	root, leafs, err := buildWithContent(cs)
 	if err != nil {
@@ -164,8 +157,7 @@ func (m *MerkleTree) RebuildTreeWith(cs []Content) error {
 	return nil
 }
 
-//VerifyTree verify tree validates the hashes at each level of the tree and returns true if the
-//resulting hash at the root of the tree matches the resulting root hash; returns false otherwise.
+// VerifyTree 验证 MerkleTree 的根哈希是否与全部叶子节点计算出的 Merkle Root 一致
 func (m *MerkleTree) VerifyTree() bool {
 	calculatedMerkleRoot := m.Root.verifyNode()
 	if bytes.Compare(m.merkleRoot, calculatedMerkleRoot) == 0 {
@@ -203,8 +195,7 @@ func (m *MerkleTree) VerifyContent(expectedMerkleRoot []byte, content Content) b
 	return false
 }
 
-//String returns a string representation of the tree. Only leaf nodes are included
-//in the output.
+// String 获取 MerkleTree 的字符串表达式
 func (m *MerkleTree) String() string {
 	s := ""
 	for _, l := range m.Leafs {
@@ -212,4 +203,15 @@ func (m *MerkleTree) String() string {
 		s += "\n"
 	}
 	return s
+}
+
+// LeafsHash 获取 MerkleTree 全部叶子节点哈希值拼接的字符串（哈希值采用 Base64 编码）
+func (m *MerkleTree) LeafsHash() string {
+	var h []string
+	for _, l := range m.Leafs {
+		if l.leaf == true && l.dup == false {
+			h = append(h, base64.StdEncoding.EncodeToString(l.Hash))
+		}
+	}
+	return strings.Join(h, ",")
 }
