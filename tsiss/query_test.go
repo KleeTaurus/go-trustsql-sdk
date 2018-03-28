@@ -17,11 +17,11 @@ func TestGetPubkeyOfAccount(t *testing.T) {
 		Timestamp: 1503648096,
 		NodeID:    "cc",
 	}
-	_, err := QueryIss(issQuery)
+	iss, err := QueryIss(issQuery)
 	if err != nil {
 		t.Error(err)
 	}
-	// fmt.Println(body)
+	t.Log(iss.Infos[0].Content)
 }
 
 func TestIssResponse(t *testing.T) {
