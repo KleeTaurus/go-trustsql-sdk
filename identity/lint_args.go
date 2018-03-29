@@ -13,7 +13,7 @@ import (
 // 3.参数名区分大小写；
 func Lint(v interface{}, c Common) string {
 	signMap := make(map[string]string)
-	getCheckString(&signMap, reflect.ValueOf(v))
+	// getCheckString(&signMap, reflect.ValueOf(v))
 	getCheckString(&signMap, reflect.ValueOf(c))
 	var keys []string
 	for k := range signMap {
@@ -23,7 +23,11 @@ func Lint(v interface{}, c Common) string {
 	lintString := ""
 	first := true
 	for k := range keys {
-		// TODO check if value is empty
+		// check if value is empty
+		if signMap[keys[k]] == "" {
+			continue
+		}
+
 		if !first {
 			lintString = lintString + "&" + keys[k] + "=" + signMap[keys[k]]
 		} else {
