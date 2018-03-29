@@ -51,19 +51,10 @@ func (k KeyPair) GenerateAddrByPubkey() []byte {
 	publicKeyHash := HashPublicKey(k.PublicKey)
 
 	// https: //en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
-	// 此处为原比特币实现方式
-	/*
-		versionPayload := append([]byte{version}, publicKeyHash...)
-		checksum := checksum(versionPayload)
-	*/
-
-	// TrustSQL 在计算公钥地址时未采用比特币标准计算方式，而是先对公钥进
-	// 行双哈希运算然后再对拼接后的字符数组进行 Base58 编码
-	// 字符数组格式: version(1 byte) + ripemd160(20 bytes) + checksum(4 bytes)
-
-	checksum := checksum(publicKeyHash)
 
 	versionPayload := append([]byte{version}, publicKeyHash...)
+	checksum := checksum(versionPayload)
+
 	fullPayload := append(versionPayload, checksum...)
 	address := Base58Encode(fullPayload)
 
