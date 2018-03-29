@@ -36,7 +36,8 @@ func GeneratePubkeyByPrvkey(privateKey []byte) ([]byte, error) {
 	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
 
 	secp256k1.Start()
-	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, false)
+	// 此处生成压缩公钥
+	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, true)
 	if !success {
 		return nil, errors.New("failed to create public key from the provided private key")
 	}
