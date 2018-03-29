@@ -1,4 +1,4 @@
-package trustsql
+package identity
 
 import (
 	"encoding/base64"
@@ -9,11 +9,7 @@ import (
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 )
 
-func main() {
-	testPairKey()
-}
-
-func testUserRegister() {
+func ExampleRegisteUser() {
 	privKey, err := base64.StdEncoding.DecodeString("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	if err != nil {
 		fmt.Println("error")
@@ -52,7 +48,7 @@ func testUserRegister() {
 	}
 }
 
-func testPairKey() {
+func ExamplePairKey() {
 	// 创建公私钥对, 公钥采用压缩格式
 	keyPair := tscec.GeneratePairkey()
 	fmt.Printf("Private Key: %s\n", base64.StdEncoding.EncodeToString(keyPair.PrivateKey))
