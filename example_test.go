@@ -10,6 +10,10 @@ import (
 )
 
 func main() {
+	testPairKey()
+}
+
+func testUserRegister() {
 	privKey, err := base64.StdEncoding.DecodeString("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	if err != nil {
 		fmt.Println("error")
@@ -46,4 +50,12 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func testPairKey() {
+	// 创建公私钥对, 公钥采用压缩格式
+	keyPair := tscec.GeneratePairkey()
+	fmt.Printf("Private Key: %s\n", base64.StdEncoding.EncodeToString(keyPair.PrivateKey))
+	fmt.Printf("Public Key: %s\n", base64.StdEncoding.EncodeToString(keyPair.PublicKey))
+	fmt.Printf("Address: %s\n", keyPair.GenerateAddrByPubkey())
 }
