@@ -26,6 +26,7 @@ import (
 func send(URI string, u interface{}, c Common, k tscec.KeyPair) ([]byte, error) {
 	data, err := json.Marshal(u)
 	c.ReqData = string(data)
+
 	sign := Lint(u, c)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func send(URI string, u interface{}, c Common, k tscec.KeyPair) ([]byte, error) 
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	// log.Printf("trustsql response body is %s", string(body))
+	log.Printf("trustsql response body is %s", string(body))
 	_ = resp.Body.Close()
 	return body, nil
 }

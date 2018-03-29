@@ -22,15 +22,15 @@ func init() {
 
 const (
 	// RegisteUserURI 注册用户
-	RegisteUserURI = "https://baas.trustsql.qq.com/idm_v1/api/user_cert/register"
+	RegisteUserURI = "https://baas.trustsql.qq.com/idm_v1.1/api/user_cert/register"
 	// GetUserInfoURI 获取用户信息
-	GetUserInfoURI = "https://baas.trustsql.qq.com/idm_v1/api/user_cert/fetch"
+	GetUserInfoURI = "https://baas.trustsql.qq.com/idm_v1.1/api/user_cert/fetch"
 	// RegisteAccountURI 创建用户账户
-	RegisteAccountURI = "https://baas.trustsql.qq.com/idm_v1/api/account_cert/register"
+	RegisteAccountURI = "https://baas.trustsql.qq.com/idm_v1.1/api/account_cert/register"
 	// GetAccountsURI 获取用户的账户地址列表
-	GetAccountsURI = "https://baas.trustsql.qq.com/idm_v1/api/account_cert/fetch_list"
+	GetAccountsURI = "https://baas.trustsql.qq.com/idm_v1.1/api/account_cert/fetch_list"
 	// GetPubkeyOfAccountURI 获取用户的账户公钥
-	GetPubkeyOfAccountURI = "https://baas.trustsql.qq.com/idm_v1/api/account_cert/fetch"
+	GetPubkeyOfAccountURI = "https://baas.trustsql.qq.com/idm_v1.1/api/account_cert/fetch"
 )
 
 // Common 公共信息
@@ -46,8 +46,8 @@ type Common struct {
 
 // UserRegister 注册用户需要的信息
 type UserRegister struct {
-	UserID       string `json:"user_id"        validate:"required"`
 	PublicKey    string `json:"public_key"     validate:"required"`
+	UserID       string `json:"user_id"        validate:"required"`
 	UserFullName string `json:"user_fullName"  validate:"required"`
 }
 
