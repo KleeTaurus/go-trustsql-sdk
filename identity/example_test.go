@@ -1,4 +1,4 @@
-package trustsql
+package identity
 
 import (
 	"encoding/base64"
@@ -9,7 +9,7 @@ import (
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 )
 
-func main() {
+func ExampleRegisteUser() {
 	privKey, err := base64.StdEncoding.DecodeString("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	if err != nil {
 		fmt.Println("error")

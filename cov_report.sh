@@ -14,4 +14,9 @@ if [ $? -ne 0 ]; then
 	  echo >&2 "go get github.com/axw/gocov/gocov"
 	  exit 1
 fi
+cd tscec/
+gocov test | gocov report
+cd ../tsiss
+gocov test | gocov report
+cd ../identity
 gocov test | gocov report
