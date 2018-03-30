@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+var DEBUG bool = true
+
 type TestContent struct {
 	x string
 }
@@ -21,6 +23,8 @@ func (t TestContent) Equals(other Content) bool {
 }
 
 func TestMerkleTree(t *testing.T) {
+	fmt.Println("======test merkletree begin======")
+
 	var list []Content
 	list = append(list, TestContent{x: "1"})
 	list = append(list, TestContent{x: "2"})
@@ -30,14 +34,30 @@ func TestMerkleTree(t *testing.T) {
 
 	tree, _ := NewTree(list)
 	mr := tree.MerkleRoot()
-	fmt.Printf("Merkle Root: %x\n", mr)
+	debug(fmt.Sprintf("Merkle Root: %x", mr))
+
+	if len(tree.Leafs) != 6 {
+		t.Errorf("The amount of leafs should be 6, %d\n", len(tree.Leafs))
+	}
 
 	vt := tree.VerifyTree()
-	fmt.Println("Verify Tree:", vt)
+	if !vt {
+		t.Errorf("Verify tree failed\n")
+	}
 
 	vc := tree.VerifyContent(mr, list[0])
-	fmt.Println("Verify Content:", vc)
+	if !vc {
+		t.Errorf("Verify content failed, content: %v\n", list[0])
+	}
 
-	fmt.Println(tree)
-	fmt.Println(tree.LeafsHash())
+	debug(fmt.Sprint(tree))
+	debug(fmt.Sprint("All leafs hash with base64: %s", tree.LeafsHash()))
+
+	fmt.Println("======test merkletree end======")
+}
+
+func debug(msg string) {
+	if DEBUG {
+		fmt.Println(msg)
+	}
 }
