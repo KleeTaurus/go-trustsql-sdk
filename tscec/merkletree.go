@@ -3,7 +3,6 @@ package tscec
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"strings"
@@ -195,6 +194,48 @@ func (m *MerkleTree) VerifyContent(expectedMerkleRoot []byte, content Content) b
 	return false
 }
 
+// findSiblingNode 获取当前节点的兄弟节点
+func findSiblingNode(t *Node, currentNodes []*Node) []string {
+	var parentNodes []*Node
+	for i, l := range currentNodes {
+		if i%2 == 0 {
+			parentNodes = append(parentNodes, l.Parent)
+		}
+	}
+
+	var siblingNode *Node
+	var siblingPos string
+	path := []string{}
+	for i, l := range currentNodes {
+		if bytes.Equal(t.Hash, l.Hash) {
+			if i%2 == 0 {
+				siblingNode, siblingPos = currentNodes[i+1], "Right"
+			} else {
+				siblingNode, siblingPos = currentNodes[i-1], "Left"
+			}
+
+			path = append(path, fmt.Sprintf("%s:%x", siblingPos, siblingNode.Hash))
+			if len(parentNodes) >= 2 {
+				path = append(path, findSiblingNode(l.Parent, parentNodes)...)
+			}
+
+			break
+		}
+	}
+
+	return path
+}
+
+// GetProof 获取指定节点对应的 Proof 路径
+func (m *MerkleTree) GetProof(content Content) []string {
+	for _, l := range m.Leafs {
+		if l.C.Equals(content) {
+			return findSiblingNode(l, m.Leafs)
+		}
+	}
+	return nil
+}
+
 // String 获取 MerkleTree 的字符串表达式
 func (m *MerkleTree) String() string {
 	s := ""
@@ -210,7 +251,7 @@ func (m *MerkleTree) LeafsHash() string {
 	var h []string
 	for _, l := range m.Leafs {
 		if l.leaf == true && l.dup == false {
-			h = append(h, base64.StdEncoding.EncodeToString(l.Hash))
+			h = append(h, string(Base58Encode(l.Hash)))
 		}
 	}
 	return strings.Join(h, ",")
