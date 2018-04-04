@@ -43,7 +43,7 @@ func TestRegisteUser(t *testing.T) {
 		PublicKey:    "2222222",
 		UserFullName: "3333333333",
 	}
-	_, err := RegisteUser(u, c, (*k))
+	_, err := RegisteUser(&u, &c, k)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -55,7 +55,7 @@ func TestGetUserInfo(t *testing.T) {
 	u := UserInfo{
 		UserID: "1111111",
 	}
-	_, err := GetUserInfo(u, c, (*k))
+	_, err := GetUserInfo(&u, &c, k)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -68,7 +68,7 @@ func TestRegisteAccount(t *testing.T) {
 		UserID:    "1111111",
 		PublicKey: "publicKey test data",
 	}
-	_, err := RegisteAccount(u, c, (*k))
+	_, err := RegisteAccount(&u, &c, k)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -85,7 +85,7 @@ func TestGetAccounts(t *testing.T) {
 		Page:      213,
 		Limit:     234,
 	}
-	_, err := GetAccounts(u, c, (*k))
+	_, err := GetAccounts(&u, &c, k)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -98,7 +98,7 @@ func TestGetPubkeyOfAccount(t *testing.T) {
 		UserID:         "1111111",
 		AccountAddress: "accout_address test data",
 	}
-	_, err := GetPubkeyOfAccount(u, c, (*k))
+	_, err := GetPubkeyOfAccount(&u, &c, k)
 	if err != nil {
 		fmt.Println(err)
 	}

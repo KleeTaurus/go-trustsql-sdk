@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"log"
 
@@ -22,6 +23,16 @@ type KeyPair struct {
 	PublicKey  []byte
 }
 
+// GetPublicKey 获取公钥的base64编码
+func (kp *KeyPair) GetPublicKey() string {
+	return base64.StdEncoding.EncodeToString(kp.PublicKey)
+}
+
+// GetPrivateKey 获取私钥的base64编码
+func (kp *KeyPair) GetPrivateKey() string {
+	return base64.StdEncoding.EncodeToString(kp.PrivateKey)
+}
+
 // GeneratePairkey 生成公私钥对
 func GeneratePairkey() *KeyPair {
 	privateKey, publicKey := newKeyPair()
@@ -30,12 +41,30 @@ func GeneratePairkey() *KeyPair {
 	return &keyPair
 }
 
+// GeneratePairkeyByPrivateKey 通过base64编码的私钥生成KeyPair
+func GeneratePairkeyByPrivateKey(privateKey string) (*KeyPair, error) {
+	privKey, err := base64.StdEncoding.DecodeString(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	pubKey, err := GeneratePubkeyByPrvkey(privKey)
+	if err != nil {
+		return nil, err
+	}
+	keyPair := KeyPair{
+		PrivateKey: privKey,
+		PublicKey:  pubKey,
+	}
+	return &keyPair, nil
+}
+
 // GeneratePubkeyByPrvkey 根据私钥计算公钥
 func GeneratePubkeyByPrvkey(privateKey []byte) ([]byte, error) {
 	var dupPrivateKey [privateKeyLen]byte
 	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
 
 	secp256k1.Start()
+	// TODO 改成可配置
 	// 此处生成压缩公钥
 	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, true)
 	if !success {
@@ -46,9 +75,14 @@ func GeneratePubkeyByPrvkey(privateKey []byte) ([]byte, error) {
 	return publicKey, nil
 }
 
+// GetAddrByPubkey 计算公钥对应的地址
+func (kp *KeyPair) GetAddrByPubkey() []byte {
+	return GenerateAddrByPubkey(kp.PublicKey)
+}
+
 // GenerateAddrByPubkey 计算公钥对应的地址
-func (k KeyPair) GenerateAddrByPubkey() []byte {
-	publicKeyHash := HashPublicKey(k.PublicKey)
+func GenerateAddrByPubkey(publicKey []byte) []byte {
+	publicKeyHash := HashPublicKey(publicKey)
 
 	// https: //en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
 

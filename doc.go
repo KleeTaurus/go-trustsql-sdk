@@ -1,1 +1,1 @@
-package trustsql
+package main

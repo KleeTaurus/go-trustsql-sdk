@@ -18,7 +18,8 @@ var (
 
 const (
 	// QueryIssURI 共享信息查询
-	QueryIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_query.cgi"
+	// QueryIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_query.cgi"
+	QueryIssURI = "http://39.107.26.141:8007/trustsql/v1.0/iss_query"
 )
 
 func init() {
@@ -41,16 +42,16 @@ type IssQuery struct {
 	ChainID     string                 `json:"chain_id" validate:"required"`  // 链ID,可以通过baas平台->相应链->基本信息页面中获取
 	LedgerID    string                 `json:"ledger_id" validate:"required"` // 账本ID,可以通过baas平台->相应链->相应账本页面中获取
 	InfoKey     string                 `json:"info_key,omitempty"`            // 信息标识,查询符合此信息标识号的记录
-	InfoVersion int                    `json:"info_version,omitempty"`        // 信息版本号, 查询符合此信息版本号的记录
-	State       int                    `json:"state,omitempty"`               // 记录状态, 由业务自行定义。
+	InfoVersion string                 `json:"info_version,omitempty"`        // XXX 信息版本号, 查询符合此信息版本号的记录
+	State       string                 `json:"state,omitempty"`               // XXX 记录状态, 由业务自行定义。
 	Content     map[string]interface{} `json:"content,omitempty"`             // 记录内容,可以选填部分json字段，查询符合这些字段的记录
 	Notes       map[string]interface{} `json:"notes,omitempty"`               // 记录注释
-	Rangee      map[string]interface{} `json:"rangee,omitempty"`              // 范围查询条件,作为查询条件，范围查询条件
+	Range       map[string]interface{} `json:"range,omitempty"`               // 范围查询条件,作为查询条件，范围查询条件
 	Account     string                 `json:"account,omitempty"`             // 记录方地址,查询符合此记录方地址的记录
 	THash       string                 `json:"t_hash,omitempty"`              // 记录哈希,查询符合此记录哈希的记录
-	PageNo      int                    `json:"page_no,omitempty"`             // 页码, 第几页，默认1
-	PageLimit   int                    `json:"page_limit,omitempty"`          // 每页数量,分页显示时每页显示多少条，默认10
-	Timestamp   int                    `json:"timestamp" validate:"required"` // 请求时间戳,当前unix时间戳(秒)
+	PageNo      string                 `json:"page_no,omitempty"`             // XXX 页码, 第几页，默认1
+	PageLimit   string                 `json:"page_limit,omitempty"`          // XXX 每页数量,分页显示时每页显示多少条，默认10
+	Timestamp   string                 `json:"timestamp" validate:"required"` // XXX 请求时间戳,当前unix时间戳(秒)
 
 	/// Range范围查询条件(string)
 	BHeight    map[string]interface{} `json:"b_height,omitempty"`    // 区块高度,条件范围，区块高度范围
@@ -94,7 +95,7 @@ type IssResponse struct {
 }
 
 // QueryIss 共享信息查询
-func QueryIss(iss IssQuery) (*IssResponse, error) {
+func QueryIss(iss *IssQuery) (*IssResponse, error) {
 	// 校验common是否符合标准
 	err := validate.Struct(iss)
 	if err != nil {
@@ -117,13 +118,6 @@ func QueryIss(iss IssQuery) (*IssResponse, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	// log.Printf("trustsql response body is %s", string(body))
 	_ = resp.Body.Close()
-
-	// TODO delete these test code
-	// body, err = ioutil.ReadFile("test_data/query_response.json")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// body = []byte(body)
 
 	issResponse := IssResponse{}
 	err = json.Unmarshal(body, &issResponse)

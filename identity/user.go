@@ -52,7 +52,7 @@ type UserRegister struct {
 }
 
 // RegisteUser 注册用户
-func RegisteUser(u UserRegister, c Common, k tscec.KeyPair) ([]byte, error) {
+func RegisteUser(u *UserRegister, c *Common, k *tscec.KeyPair) ([]byte, error) {
 	return send(RegisteUserURI, u, c, k)
 }
 
@@ -62,7 +62,7 @@ type UserInfo struct {
 }
 
 // GetUserInfo 获取用户信息参数
-func GetUserInfo(u UserInfo, c Common, k tscec.KeyPair) ([]byte, error) {
+func GetUserInfo(u *UserInfo, c *Common, k *tscec.KeyPair) ([]byte, error) {
 	return send(GetUserInfoURI, u, c, k)
 }
 
@@ -73,7 +73,7 @@ type Account struct {
 }
 
 // RegisteAccount 创建用户账户
-func RegisteAccount(u Account, c Common, k tscec.KeyPair) ([]byte, error) {
+func RegisteAccount(u *Account, c *Common, k *tscec.KeyPair) ([]byte, error) {
 	return send(RegisteAccountURI, u, c, k)
 }
 
@@ -88,7 +88,7 @@ type Accounts struct {
 }
 
 // GetAccounts 获取用户的账户地址列表
-func GetAccounts(u Accounts, c Common, k tscec.KeyPair) ([]byte, error) {
+func GetAccounts(u *Accounts, c *Common, k *tscec.KeyPair) ([]byte, error) {
 	return send(GetAccountsURI, u, c, k)
 }
 
@@ -99,6 +99,6 @@ type PubkeyOfAccount struct {
 }
 
 // GetPubkeyOfAccount 获取用户的账户公钥
-func GetPubkeyOfAccount(u PubkeyOfAccount, c Common, k tscec.KeyPair) ([]byte, error) {
+func GetPubkeyOfAccount(u *PubkeyOfAccount, c *Common, k *tscec.KeyPair) ([]byte, error) {
 	return send(GetPubkeyOfAccountURI, u, c, k)
 }
