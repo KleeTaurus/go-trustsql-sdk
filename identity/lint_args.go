@@ -1,17 +1,20 @@
 package identity
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // Lint 封装了请求餐具数据拼接要求
 // 1.参数名ASCII码从小到大排序（字典序）；
 // 2.如果参数的值为空不参与签名；
 // 3.参数名区分大小写；
-func Lint(v interface{}, c Common) string {
+func Lint(v interface{}, c interface{}) string {
 	signMap := make(map[string]string)
 	// getCheckString(&signMap, reflect.ValueOf(v))
 	getCheckString(&signMap, reflect.ValueOf(c))
@@ -44,7 +47,10 @@ func getCheckString(m *map[string]string, v reflect.Value) {
 		if "sign" == v.Type().Field(i).Tag.Get("json") {
 			continue
 		}
-		tag := v.Type().Field(i).Tag.Get("json")
+		tagArr := v.Type().Field(i).Tag.Get("json")
+		tag := strings.Split(tagArr, ",")[0]
+
+		// TODO 没有覆盖全类型
 		switch v.Field(i).Kind() {
 		case reflect.Int64:
 			{
@@ -54,6 +60,16 @@ func getCheckString(m *map[string]string, v reflect.Value) {
 		case reflect.Int:
 			{
 				(*m)[tag] = strconv.Itoa(v.Field(i).Interface().(int))
+				continue
+			}
+		case reflect.Map:
+			{
+				value, err := json.Marshal(v.Field(i).Interface().(map[string]interface{}))
+				if err != nil {
+					// TODO
+					fmt.Println(err)
+				}
+				(*m)[tag] = string(value)
 				continue
 			}
 		}

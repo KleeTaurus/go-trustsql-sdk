@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/KleeTaurus/go-trustsql-sdk/identity"
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 )
 
@@ -28,7 +27,7 @@ func ExampleRegisteUser() {
 	userKeyPair := tscec.GeneratePairkey()
 	userPublicKey := string(base64.StdEncoding.EncodeToString(userKeyPair.PublicKey))
 
-	c := identity.Common{
+	c := Common{
 		MchID:       "xxxxxxxxxxxxxxxxx",
 		ProductCode: "xxxxxxxxx",
 		SeqNo:       "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -37,12 +36,12 @@ func ExampleRegisteUser() {
 		TimeStamp:   time.Now().Unix(),
 		ReqData:     "",
 	}
-	u := identity.UserRegister{
+	u := UserRegister{
 		PublicKey:    userPublicKey,
 		UserID:       "xxxxxxxx",
 		UserFullName: "xxxxxxxxxx",
 	}
-	_, err = identity.RegisteUser(u, c, keyPair)
+	_, err = RegisteUser(&u, &c, &keyPair)
 	if err != nil {
 		fmt.Println(err)
 	}

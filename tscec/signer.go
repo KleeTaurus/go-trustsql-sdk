@@ -21,19 +21,24 @@ func Sign(privateKey []byte, data []byte) string {
 	// privKey := PrivateKeyFromBytes(privateKey)
 	dataSHA256 := sha256.Sum256(data)
 
-	/*
-		r, s, err := ecdsa.Sign(rand.Reader, privKey, dataSHA256[:])
-		if err != nil {
-			log.Panic(err)
-		}
-		signature := append(r.Bytes(), s.Bytes()...)
-	*/
-
-	// val, success := secp256k1.Sign(dataSHA256, privateKey, nil)
 	var dupPrivKey [32]byte
 	copy(dupPrivKey[:32], privateKey[:])
 	val, _ := secp256k1.Sign(dataSHA256, dupPrivKey, nil)
 	secp256k1.Stop()
+
+	// // DER encode
+	// b, err := asn1.Marshal(val)
+	// if err != nil {
+	// 	// TODO err handing
+	// 	fmt.Println("err der encode")
+	// }
+	// reg := regexp.MustCompile(`[\s*\t\n\r]`)
+	// rep := []byte("")
+	// val1 := reg.ReplaceAll(b, rep)
+	// fmt.Println("----------------------------")
+	// fmt.Println(base64.StdEncoding.EncodeToString(val))
+	// fmt.Println(base64.StdEncoding.EncodeToString(val1))
+	// fmt.Println("----------------------------")
 	return string(base64.StdEncoding.EncodeToString(val))
 }
 

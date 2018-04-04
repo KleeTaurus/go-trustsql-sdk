@@ -7,7 +7,7 @@ import (
 )
 
 func TestAppendIss(t *testing.T) {
-	issAppend := IssAppend{
+	issAppend := &IssAppend{
 		Version:     "1.0",
 		SignType:    "ECDSA",
 		MchID:       "gbec7b7cece75c8a5",

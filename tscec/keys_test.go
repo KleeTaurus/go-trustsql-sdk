@@ -23,7 +23,7 @@ func TestGeneratePairkey(t *testing.T) {
 		t.Errorf("Incorrect length of the public key, it should be 33 bytes\n")
 	}
 
-	if len(keyPair.GenerateAddrByPubkey()) != 34 && len(keyPair.GenerateAddrByPubkey()) != 33 {
+	if len(keyPair.GetAddrByPubkey()) != 34 && len(keyPair.GetAddrByPubkey()) != 33 {
 		t.Errorf("Incorrect length of the address, it should be 34 or 33 bytes\n")
 	}
 }
@@ -49,8 +49,8 @@ func TestPublicKeyAndAddress(t *testing.T) {
 		}
 
 		keyPair := &KeyPair{base64Decode(privateKey), base64Decode(publicKey)}
-		if address != string(keyPair.GenerateAddrByPubkey()) {
-			t.Errorf("Incorrect derived address, target: %s, derived: %s\n", address, keyPair.GenerateAddrByPubkey())
+		if address != string(keyPair.GetAddrByPubkey()) {
+			t.Errorf("Incorrect derived address, target: %s, derived: %s\n", address, keyPair.GetAddrByPubkey())
 		}
 	}
 }
