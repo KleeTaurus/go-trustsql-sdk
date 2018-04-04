@@ -194,30 +194,47 @@ func (m *MerkleTree) VerifyContent(expectedMerkleRoot []byte, content Content) b
 	return false
 }
 
-// findSiblingNode 获取当前节点的兄弟节点
-func findSiblingNode(t *Node, currentNodes []*Node) []string {
-	var parentNodes []*Node
+// Proof 用于验证的结构体
+type Proof struct {
+	Position string
+	Hash     []byte
+}
+
+// String 获取 Proof 的字符串表达式
+func (p *Proof) String() string {
+	return fmt.Sprintf("%s: %x", p.Position, p.Hash)
+}
+
+// getProof 获取当前节点对应层级之上的所有 Proof 路径
+func getProof(t *Node, currentNodes []*Node) []*Proof {
+	// fmt.Printf("\t%v\n", currentNodes)
+	if len(currentNodes) < 2 {
+		return []*Proof{}
+	}
+
+	parentNodes := []*Node{}
 	for i, l := range currentNodes {
 		if i%2 == 0 {
 			parentNodes = append(parentNodes, l.Parent)
 		}
 	}
 
-	var siblingNode *Node
-	var siblingPos string
-	path := []string{}
+	var proof *Proof
+	path := []*Proof{}
 	for i, l := range currentNodes {
 		if bytes.Equal(t.Hash, l.Hash) {
 			if i%2 == 0 {
-				siblingNode, siblingPos = currentNodes[i+1], "Right"
+				if i == len(currentNodes)-1 {
+					proof = &Proof{"Right", currentNodes[i].Hash[:]}
+				} else {
+					proof = &Proof{"Right", currentNodes[i+1].Hash[:]}
+				}
 			} else {
-				siblingNode, siblingPos = currentNodes[i-1], "Left"
+				proof = &Proof{"Left", currentNodes[i-1].Hash[:]}
 			}
 
-			path = append(path, fmt.Sprintf("%s:%x", siblingPos, siblingNode.Hash))
-			if len(parentNodes) >= 2 {
-				path = append(path, findSiblingNode(l.Parent, parentNodes)...)
-			}
+			path = append(path, proof)
+			path = append(path, getProof(l.Parent, parentNodes)...)
 
 			break
 		}
@@ -227,13 +244,13 @@ func findSiblingNode(t *Node, currentNodes []*Node) []string {
 }
 
 // GetProof 获取指定节点对应的 Proof 路径
-func (m *MerkleTree) GetProof(content Content) []string {
+func (m *MerkleTree) GetProof(content Content) ([]*Proof, error) {
 	for _, l := range m.Leafs {
 		if l.C.Equals(content) {
-			return findSiblingNode(l, m.Leafs)
+			return getProof(l, m.Leafs), nil
 		}
 	}
-	return nil
+	return nil, errors.New("Error: cannot find the content in merkle tree.")
 }
 
 // String 获取 MerkleTree 的字符串表达式

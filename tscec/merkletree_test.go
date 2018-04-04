@@ -53,7 +53,10 @@ func TestMerkleTree(t *testing.T) {
 	debug(fmt.Sprint(tree))
 	debug(fmt.Sprintf("All leafs hash with base64: %s", tree.LeafsHash()))
 
-	proof := tree.GetProof(list[2])
+	proof, err := tree.GetProof(list[4])
+	if err != nil {
+		t.Errorf("Get proof path failed %s\n", err)
+	}
 	debug(fmt.Sprintf("Proof: %v", proof))
 
 	fmt.Println("======test merkletree end======")
