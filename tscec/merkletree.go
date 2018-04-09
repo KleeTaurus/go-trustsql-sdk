@@ -1,275 +1,134 @@
 package tscec
 
 import (
-	"bytes"
 	"crypto/sha256"
-	"errors"
 	"fmt"
-	"strings"
 )
 
-// Content MerkleTree 中叶子节点对应的存储内容
-type Content interface {
-	CalculateHash() []byte
-	Equals(other Content) bool
-}
-
-// MerkleTree 用于存储哈希树的根节点、merkleRoot 值及所有叶子节点列表
-type MerkleTree struct {
-	Root       *Node
-	merkleRoot []byte
-	Leafs      []*Node
-}
-
-// Node MerkleTree 中的节点，包括：叶子节点、中间节点或根节点
-type Node struct {
-	Parent *Node
-	Left   *Node
-	Right  *Node
-	leaf   bool
-	dup    bool
-	Hash   []byte
-	C      Content
-}
-
-// String 对 Node 节点进行格式化输出
-func (n Node) String() string {
-	return fmt.Sprintf("Hash: %x, Leaf: %t, Value: %v", n.Hash, n.leaf, n.C)
-}
-
-// verifyNode 验证当前节点下所有子节点的哈希值
-func (n *Node) verifyNode() []byte {
-	if n.leaf {
-		return n.C.CalculateHash()
-	}
-	h := sha256.New()
-	h.Write(append(n.Left.verifyNode(), n.Right.verifyNode()...))
-	return h.Sum(nil)
-}
-
-// calculateNodeHash 计算当前节点的哈希值
-func (n *Node) calculateNodeHash() []byte {
-	if n.leaf {
-		return n.C.CalculateHash()
-	}
-	h := sha256.New()
-	h.Write(append(n.Left.Hash, n.Right.Hash...))
-	return h.Sum(nil)
-}
-
-// NewTree 使用 cs 构建一个 MerkleTree
-func NewTree(cs []Content) (*MerkleTree, error) {
-	root, leafs, err := buildWithContent(cs)
-	if err != nil {
-		return nil, err
-	}
-	t := &MerkleTree{
-		Root:       root,
-		merkleRoot: root.Hash,
-		Leafs:      leafs,
-	}
-	return t, nil
-}
-
-// buildWithContent 根据传入的 cs 构建完整的 MerkleTree（cs 为空时返回错误）
-func buildWithContent(cs []Content) (*Node, []*Node, error) {
-	if len(cs) == 0 {
-		return nil, nil, errors.New("Error: cannot construct tree with no content.")
-	}
-	var leafs []*Node
-	for _, c := range cs {
-		leafs = append(leafs, &Node{
-			Hash: c.CalculateHash(),
-			C:    c,
-			leaf: true,
-		})
-	}
-	if len(leafs)%2 == 1 {
-		duplicate := &Node{
-			Hash: leafs[len(leafs)-1].Hash,
-			C:    leafs[len(leafs)-1].C,
-			leaf: true,
-			dup:  true,
+func ComputeMerkleRootFromPath(leafHash string, merklePath []string, leafIndex uint32) string {
+	var hash string = leafHash
+	for _, p := range merklePath {
+		if (leafIndex & uint32(1)) != 0 {
+			hash = combineHash(p, hash)
+		} else {
+			hash = combineHash(hash, p)
 		}
-		leafs = append(leafs, duplicate)
+		leafIndex >>= 1
 	}
-	root := buildIntermediate(leafs)
-	return root, leafs, nil
+	return hash
 }
 
-// buildIntermediate 根据传入的叶子节点列表构建完整的 MerkleTree
-func buildIntermediate(nl []*Node) *Node {
-	var nodes []*Node
-	for i := 0; i < len(nl); i += 2 {
-		var left, right int = i, i + 1
-		if i+1 == len(nl) {
-			right = i
-		}
-		chash := append(nl[left].Hash, nl[right].Hash...)
-		h := sha256.New()
-		h.Write(chash)
-		n := &Node{
-			Left:  nl[left],
-			Right: nl[right],
-			Hash:  h.Sum(nil),
-		}
-		nodes = append(nodes, n)
-		nl[left].Parent = n
-		nl[right].Parent = n
-		if len(nl) == 2 {
-			return n
-		}
-	}
-	return buildIntermediate(nodes)
+func ComputeMerkleRoot(leaves []string) string {
+	var merkleRoot string
+	merkleComputation(leaves, &merkleRoot, 0, nil)
+	return merkleRoot
 }
 
-// MerkleRoot 获取 MerkleTree 根节点哈希
-func (m *MerkleTree) MerkleRoot() []byte {
-	return m.merkleRoot
+func ComputeMerklePath(leaves []string, leafIndex uint32) []string {
+	merklePath := []string{}
+	merkleComputation(leaves, nil, leafIndex, &merklePath)
+	return merklePath
 }
 
-// RebuildTree 使用现有叶子节点重新构建 MerkleTree
-func (m *MerkleTree) RebuildTree() error {
-	var cs []Content
-	for _, c := range m.Leafs {
-		cs = append(cs, c.C)
+// Ported from consensus/merkle::MerkleComputation in Bitcoin Core
+func merkleComputation(leaves []string, pRoot *string, leafIndex uint32, pPath *[]string) {
+	if len(leaves) == 0 {
+		return
 	}
-	root, leafs, err := buildWithContent(cs)
-	if err != nil {
-		return err
-	}
-	m.Root = root
-	m.Leafs = leafs
-	m.merkleRoot = root.Hash
-	return nil
-}
 
-// RebuildTreeWith 使用传入的 cs 重新构建 MerkleTree
-func (m *MerkleTree) RebuildTreeWith(cs []Content) error {
-	root, leafs, err := buildWithContent(cs)
-	if err != nil {
-		return err
-	}
-	m.Root = root
-	m.Leafs = leafs
-	m.merkleRoot = root.Hash
-	return nil
-}
+	// the number of leaves processed so far.
+	var count uint32 = 0
+	// inner is an array of eagerly computed subtree hashes, indexed by tree
+	// level (0 being the leaves).
+	// For example, when count is 25 (11001 in binary), inner[4] is the hash of
+	// the first 16 leaves, inner[3] of the next 8 leaves, and inner[0] equal to
+	// the last leaf. The other inner entries are undefined.
+	var inner [32]string
+	var level uint32
+	var h string
+	var matchLevel int = -1
 
-// VerifyTree 验证 MerkleTree 的根哈希是否与全部叶子节点计算出的 Merkle Root 一致
-func (m *MerkleTree) VerifyTree() bool {
-	calculatedMerkleRoot := m.Root.verifyNode()
-	if bytes.Compare(m.merkleRoot, calculatedMerkleRoot) == 0 {
-		return true
-	}
-	return false
-}
-
-//VerifyContent indicates whether a given content is in the tree and the hashes are valid for that content.
-//Returns true if the expected Merkle Root is equivalent to the Merkle root calculated on the critical path
-//for a given content. Returns true if valid and false otherwise.
-func (m *MerkleTree) VerifyContent(expectedMerkleRoot []byte, content Content) bool {
-	for _, l := range m.Leafs {
-		if l.C.Equals(content) {
-			currentParent := l.Parent
-			for currentParent != nil {
-				h := sha256.New()
-				if currentParent.Left.leaf && currentParent.Right.leaf {
-					h.Write(append(currentParent.Left.calculateNodeHash(), currentParent.Right.calculateNodeHash()...))
-					if bytes.Compare(h.Sum(nil), currentParent.Hash) != 0 {
-						return false
-					}
-					currentParent = currentParent.Parent
-				} else {
-					h.Write(append(currentParent.Left.calculateNodeHash(), currentParent.Right.calculateNodeHash()...))
-					if bytes.Compare(h.Sum(nil), currentParent.Hash) != 0 {
-						return false
-					}
-					currentParent = currentParent.Parent
+	// First process all leaves into 'inner' values.
+	for count < uint32(len(leaves)) {
+		h = leaves[count]
+		var matchh bool = (count == leafIndex)
+		count++
+		// For each of the lower bits in count that are 0, do 1 step. Each
+		// corresponds to an inner value that existed before processing the
+		// current leaf, and each needs a hash to combine it.
+		for level = 0; (count & ((uint32(1)) << level)) == 0; level++ {
+			condition := (count & ((uint32(1)) << level)) == 0
+			fmt.Printf("count: %d, level: %d, condition: %t\n", count, level, condition)
+			if pPath != nil {
+				if matchh {
+					*pPath = append(*pPath, inner[level])
+				} else if matchLevel == int(level) {
+					*pPath = append(*pPath, h)
+					matchh = true
 				}
 			}
-			return true
+			h = combineHash(inner[level], h)
 		}
-	}
-	return false
-}
-
-// Proof 用于验证的结构体
-type Proof struct {
-	Position string
-	Hash     []byte
-}
-
-// String 获取 Proof 的字符串表达式
-func (p *Proof) String() string {
-	return fmt.Sprintf("%s: %x", p.Position, p.Hash)
-}
-
-// getProof 获取当前节点对应层级之上的所有 Proof 路径
-func getProof(t *Node, currentNodes []*Node) []*Proof {
-	// fmt.Printf("\t%v\n", currentNodes)
-	if len(currentNodes) < 2 {
-		return []*Proof{}
-	}
-
-	parentNodes := []*Node{}
-	for i, l := range currentNodes {
-		if i%2 == 0 {
-			parentNodes = append(parentNodes, l.Parent)
+		inner[level] = h
+		if matchh {
+			matchLevel = int(level)
 		}
 	}
 
-	var proof *Proof
-	path := []*Proof{}
-	for i, l := range currentNodes {
-		if bytes.Equal(t.Hash, l.Hash) {
-			if i%2 == 0 {
-				if i == len(currentNodes)-1 {
-					proof = &Proof{"Right", currentNodes[i].Hash[:]}
-				} else {
-					proof = &Proof{"Right", currentNodes[i+1].Hash[:]}
+	// Do a final 'sweep' over the rightmost branch of the tree to process
+	// odd levels, and reduce everything to a single top value.
+	// Level is the level (counted from the bottom) up to which we've sweeped.
+	level = 0
+	// As long as bit number level in count is zero, skip it. It means there
+	// is nothing left at this level.
+	for (count & (uint32(1) << level)) == 0 {
+		level++
+	}
+	h = inner[level]
+	var matchh bool = (matchLevel == int(level))
+	for count != (uint32(1) << level) {
+		// If we reach this point, h is an inner value that is not the top.
+		// We combine it with itself (Bitcoin's special rule for odd levels in
+		// the tree) to produce a higher level one.
+		if pPath != nil && matchh {
+			*pPath = append(*pPath, h)
+		}
+		h = combineHash(h, h)
+		// Increment count to the value it would have if two entries at this
+		// level had existed
+		count += (uint32(1) << level)
+		level++
+		// And propagate the result upwards accordingly.
+		for (count & (uint32(1) << level)) == 0 {
+			if pPath != nil {
+				if matchh {
+					*pPath = append(*pPath, inner[level])
+				} else if matchLevel == int(level) {
+					*pPath = append(*pPath, h)
+					matchh = true
 				}
-			} else {
-				proof = &Proof{"Left", currentNodes[i-1].Hash[:]}
 			}
-
-			path = append(path, proof)
-			path = append(path, getProof(l.Parent, parentNodes)...)
-
-			break
+			h = combineHash(inner[level], h)
+			level++
 		}
 	}
 
-	return path
+	// Return result.
+	if pRoot != nil {
+		*pRoot = h
+	}
 }
 
-// GetProof 获取指定节点对应的 Proof 路径
-func (m *MerkleTree) GetProof(content Content) ([]*Proof, error) {
-	for _, l := range m.Leafs {
-		if l.C.Equals(content) {
-			return getProof(l, m.Leafs), nil
-		}
-	}
-	return nil, errors.New("Error: cannot find the content in merkle tree.")
+func dsha256(s string) string {
+	firstHash := sha256.Sum256([]byte(s))
+	// Convert array to slice: firstHash[:]
+	secondHash := sha256.Sum256(firstHash[:])
+	// convert byte array to str
+	ret := fmt.Sprintf("%s", secondHash)
+	return ret
 }
 
-// String 获取 MerkleTree 的字符串表达式
-func (m *MerkleTree) String() string {
-	s := ""
-	for _, l := range m.Leafs {
-		s += fmt.Sprint(l)
-		s += "\n"
-	}
-	return s
-}
-
-// LeafsHash 获取 MerkleTree 全部叶子节点哈希值拼接的字符串（哈希值采用 Base64 编码）
-func (m *MerkleTree) LeafsHash() string {
-	var h []string
-	for _, l := range m.Leafs {
-		if l.leaf == true && l.dup == false {
-			h = append(h, string(Base58Encode(l.Hash)))
-		}
-	}
-	return strings.Join(h, ",")
+func combineHash(x, y string) string {
+	cat := x + y
+	return dsha256(cat)
 }
