@@ -4,22 +4,22 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"encoding/base64"
+	"crypto/sha256"
+	"errors"
 	"log"
+
+	secp256k1 "github.com/toxeus/go-secp256k1"
+	"golang.org/x/crypto/ripemd160"
 )
 
-const version = byte(0x00)
-const addressChecksumLen = 4
-const privateKeyLen = 32
+const (
+	version            = byte(0x00)
+	addressChecksumLen = 4
+	privateKeyLen      = 32
+)
 
-// KeyPair 公私钥对数据结构
-type KeyPair struct {
-	PrivateKey []byte
-	PublicKey  []byte
-}
-
-// 生成公私钥对
-func newKeyPair() ([]byte, []byte) {
+// NewKeyPair 生成公私钥对
+func NewKeyPair() ([]byte, []byte) {
 	curve := elliptic.P256()
 	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
@@ -34,52 +34,48 @@ func newKeyPair() ([]byte, []byte) {
 	return privateKey.D.Bytes(), publicKey
 }
 
-// GeneratePairkey 生成公私钥对
-func GeneratePairkey() *KeyPair {
-	privateKey, publicKey := newKeyPair()
-	keyPair := KeyPair{privateKey, publicKey}
+// GeneratePubkeyByPrvkey 根据私钥计算公钥
+func GeneratePubkeyByPrvkey(privateKey []byte) ([]byte, error) {
+	var dupPrivateKey [privateKeyLen]byte
+	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
 
-	return &keyPair
+	secp256k1.Start()
+	// TODO 改成可配置
+	// 此处生成压缩公钥
+	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, true)
+	if !success {
+		return nil, errors.New("failed to create public key from the provided private key")
+	}
+	secp256k1.Stop()
+
+	return publicKey, nil
 }
 
-// GeneratePairkeyByPrivateKey 通过base64编码的私钥生成KeyPair
-func GeneratePairkeyByPrivateKey(privateKey string) (*KeyPair, error) {
-	privKey, err := base64.StdEncoding.DecodeString(privateKey)
+// GenerateAddrByPubkey 计算公钥对应的地址
+func GenerateAddrByPubkey(publicKey []byte) []byte {
+	publicKeyHash := HashPublicKey(publicKey)
+
+	// https: //en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
+
+	versionPayload := append([]byte{version}, publicKeyHash...)
+	checksum := checksum(versionPayload)
+
+	fullPayload := append(versionPayload, checksum...)
+	address := Base58Encode(fullPayload)
+
+	return address
+}
+
+// HashPublicKey 哈希公钥
+func HashPublicKey(publicKey []byte) []byte {
+	publicKeySHA256 := sha256.Sum256(publicKey)
+
+	RIPEMD160Hasher := ripemd160.New()
+	_, err := RIPEMD160Hasher.Write(publicKeySHA256[:])
 	if err != nil {
-		return nil, err
+		log.Panic(err)
 	}
-	pubKey, err := GeneratePubkeyByPrvkey(privKey)
-	if err != nil {
-		return nil, err
-	}
-	keyPair := KeyPair{
-		PrivateKey: privKey,
-		PublicKey:  pubKey,
-	}
-	return &keyPair, nil
-}
+	publicKeyRIPEMD160 := RIPEMD160Hasher.Sum(nil)
 
-// GetPrivateKey 获取私钥的base64编码
-func (kp *KeyPair) GetPrivateKey() string {
-	return base64.StdEncoding.EncodeToString(kp.PrivateKey)
-}
-
-// GetPublicKey 获取公钥的base64编码
-func (kp *KeyPair) GetPublicKey() string {
-	return base64.StdEncoding.EncodeToString(kp.PublicKey)
-}
-
-// GetAddrByPubkey 计算公钥对应的地址
-func (kp *KeyPair) GetAddrByPubkey() []byte {
-	return GenerateAddrByPubkey(kp.PublicKey)
-}
-
-// SignString 对一个字符串进行签名（通常用于生成通讯方签名）
-func (kp *KeyPair) SignString(s string) string {
-	return Sign(kp.PrivateKey, []byte(s))
-}
-
-// VerifySignature 对签名进行验证
-func (kp *KeyPair) VerifySignature(sig, data []byte) bool {
-	return Verify(kp.PublicKey, sig, data)
+	return publicKeyRIPEMD160
 }
