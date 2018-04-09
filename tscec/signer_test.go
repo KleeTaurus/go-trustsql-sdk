@@ -8,12 +8,12 @@ import (
 
 func TestSign(t *testing.T) {
 	fmt.Println("\n======test sign begin==========")
-	keyPair := GeneratePairkey()
-	fmt.Printf("privkey:   %s\n", base64.StdEncoding.EncodeToString(keyPair.PrivateKey))
-	fmt.Printf("pubkey:    %s\n", base64.StdEncoding.EncodeToString(keyPair.PublicKey))
+	privateKey, publicKey := NewKeyPair()
+	fmt.Printf("privkey:   %s\n", base64.StdEncoding.EncodeToString(privateKey))
+	fmt.Printf("pubkey:    %s\n", base64.StdEncoding.EncodeToString(publicKey))
 
 	signMsg := "hello world, you are welcome"
-	ret := Sign(keyPair.PrivateKey, []byte(signMsg))
+	ret := Sign(privateKey, []byte(signMsg))
 
 	fmt.Printf("data:      %s\n", signMsg)
 	fmt.Printf("signature: %s\n", ret)
