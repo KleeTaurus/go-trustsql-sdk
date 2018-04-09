@@ -36,46 +36,47 @@ func TestCommonValidate(t *testing.T) {
 }
 
 func TestRegisteUser(t *testing.T) {
-	k := tscec.GeneratePairkey()
+	privateKey, _ := tscec.NewKeyPair()
+
 	c := common()
 	u := UserRegister{
 		UserID:       "1111111",
 		PublicKey:    "2222222",
 		UserFullName: "3333333333",
 	}
-	_, err := RegisteUser(&u, &c, k)
+	_, err := RegisteUser(&u, &c, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func TestGetUserInfo(t *testing.T) {
-	k := tscec.GeneratePairkey()
+	privateKey, _ := tscec.NewKeyPair()
 	c := common()
 	u := UserInfo{
 		UserID: "1111111",
 	}
-	_, err := GetUserInfo(&u, &c, k)
+	_, err := GetUserInfo(&u, &c, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func TestRegisteAccount(t *testing.T) {
-	k := tscec.GeneratePairkey()
+	privateKey, _ := tscec.NewKeyPair()
 	c := common()
 	u := Account{
 		UserID:    "1111111",
 		PublicKey: "publicKey test data",
 	}
-	_, err := RegisteAccount(&u, &c, k)
+	_, err := RegisteAccount(&u, &c, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func TestGetAccounts(t *testing.T) {
-	k := tscec.GeneratePairkey()
+	privateKey, _ := tscec.NewKeyPair()
 	c := common()
 	u := Accounts{
 		UserID:    "1111111",
@@ -85,20 +86,20 @@ func TestGetAccounts(t *testing.T) {
 		Page:      213,
 		Limit:     234,
 	}
-	_, err := GetAccounts(&u, &c, k)
+	_, err := GetAccounts(&u, &c, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func TestGetPubkeyOfAccount(t *testing.T) {
-	k := tscec.GeneratePairkey()
+	privateKey, _ := tscec.NewKeyPair()
 	c := common()
 	u := PubkeyOfAccount{
 		UserID:         "1111111",
 		AccountAddress: "accout_address test data",
 	}
-	_, err := GetPubkeyOfAccount(&u, &c, k)
+	_, err := GetPubkeyOfAccount(&u, &c, privateKey)
 	if err != nil {
 		fmt.Println(err)
 	}

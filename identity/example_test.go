@@ -1,3 +1,5 @@
+// +build ignore
+
 package identity
 
 import (
@@ -5,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
+	"github.com/KleeTaurus/go-trustsql-sdk"
 )
 
 func ExampleRegisteUser() {
@@ -14,18 +16,8 @@ func ExampleRegisteUser() {
 		fmt.Println("error")
 	}
 
-	pubKey, err := tscec.GeneratePubkeyByPrvkey(privKey)
-	if err != nil {
-		fmt.Println("error")
-	}
-	keyPair := tscec.KeyPair{
-		PrivateKey: privKey,
-		PublicKey:  pubKey,
-	}
-	// p := string(base64.StdEncoding.EncodeToString(pubKey))
-
-	userKeyPair := tscec.GeneratePairkey()
-	userPublicKey := string(base64.StdEncoding.EncodeToString(userKeyPair.PublicKey))
+	userKeyPair := trustsql.GeneratePairkey()
+	userPublicKey := userKeyPair.GetPublicKey()
 
 	c := Common{
 		MchID:       "xxxxxxxxxxxxxxxxx",
@@ -41,7 +33,7 @@ func ExampleRegisteUser() {
 		UserID:       "xxxxxxxx",
 		UserFullName: "xxxxxxxxxx",
 	}
-	_, err = RegisteUser(&u, &c, &keyPair)
+	_, err = RegisteUser(&u, &c, privKey)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -49,8 +41,8 @@ func ExampleRegisteUser() {
 
 func ExamplePairKey() {
 	// 创建公私钥对, 公钥采用压缩格式
-	keyPair := tscec.GeneratePairkey()
+	keyPair := trustsql.GeneratePairkey()
 	fmt.Printf("Private Key: %s\n", base64.StdEncoding.EncodeToString(keyPair.PrivateKey))
 	fmt.Printf("Public Key: %s\n", base64.StdEncoding.EncodeToString(keyPair.PublicKey))
-	fmt.Printf("Address: %s\n", keyPair.GenerateAddrByPubkey())
+	fmt.Printf("Address: %s\n", keyPair.GetAddrByPubkey())
 }
