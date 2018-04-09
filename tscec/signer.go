@@ -10,11 +10,6 @@ import (
 	secp256k1 "github.com/toxeus/go-secp256k1"
 )
 
-// SignString 对一个字符串进行签名（通常用于生成通讯方签名）
-func (k *KeyPair) SignString(s string) string {
-	return Sign(k.PrivateKey, []byte(s))
-}
-
 // Sign 签名
 func Sign(privateKey []byte, data []byte) string {
 	secp256k1.Start()

@@ -73,3 +73,13 @@ func (kp *KeyPair) GetPublicKey() string {
 func (kp *KeyPair) GetAddrByPubkey() []byte {
 	return GenerateAddrByPubkey(kp.PublicKey)
 }
+
+// SignString 对一个字符串进行签名（通常用于生成通讯方签名）
+func (kp *KeyPair) SignString(s string) string {
+	return Sign(kp.PrivateKey, []byte(s))
+}
+
+// VerifySignature 对签名进行验证
+func (kp *KeyPair) VerifySignature(sig, data []byte) bool {
+	return Verify(kp.PublicKey, sig, data)
+}
