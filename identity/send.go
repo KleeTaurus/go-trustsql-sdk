@@ -23,7 +23,7 @@ import (
 // 	GetPubkeyOfAccountURI = "http://39.107.26.141:8004/post"
 // )
 
-func send(URI string, u interface{}, c *Common, k *tscec.KeyPair) ([]byte, error) {
+func send(URI string, u interface{}, c *Common, privateKey []byte) ([]byte, error) {
 	data, err := json.Marshal(u)
 	c.ReqData = string(data)
 
@@ -31,7 +31,7 @@ func send(URI string, u interface{}, c *Common, k *tscec.KeyPair) ([]byte, error
 	if err != nil {
 		return nil, err
 	}
-	c.Sign = k.SignString(sign)
+	c.Sign = tscec.Sign(privateKey, []byte(sign))
 
 	reqData, err := json.Marshal(c)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -52,8 +51,8 @@ type UserRegister struct {
 }
 
 // RegisteUser 注册用户
-func RegisteUser(u *UserRegister, c *Common, k *tscec.KeyPair) ([]byte, error) {
-	return send(RegisteUserURI, u, c, k)
+func RegisteUser(u *UserRegister, c *Common, privateKey []byte) ([]byte, error) {
+	return send(RegisteUserURI, u, c, privateKey)
 }
 
 // UserInfo 获取用户信息参数
@@ -62,8 +61,8 @@ type UserInfo struct {
 }
 
 // GetUserInfo 获取用户信息参数
-func GetUserInfo(u *UserInfo, c *Common, k *tscec.KeyPair) ([]byte, error) {
-	return send(GetUserInfoURI, u, c, k)
+func GetUserInfo(u *UserInfo, c *Common, privateKey []byte) ([]byte, error) {
+	return send(GetUserInfoURI, u, c, privateKey)
 }
 
 // Account 创建用户账户参数
@@ -73,8 +72,8 @@ type Account struct {
 }
 
 // RegisteAccount 创建用户账户
-func RegisteAccount(u *Account, c *Common, k *tscec.KeyPair) ([]byte, error) {
-	return send(RegisteAccountURI, u, c, k)
+func RegisteAccount(u *Account, c *Common, privateKey []byte) ([]byte, error) {
+	return send(RegisteAccountURI, u, c, privateKey)
 }
 
 // Accounts 获取用户的账户地址列表参数
@@ -88,8 +87,8 @@ type Accounts struct {
 }
 
 // GetAccounts 获取用户的账户地址列表
-func GetAccounts(u *Accounts, c *Common, k *tscec.KeyPair) ([]byte, error) {
-	return send(GetAccountsURI, u, c, k)
+func GetAccounts(u *Accounts, c *Common, privateKey []byte) ([]byte, error) {
+	return send(GetAccountsURI, u, c, privateKey)
 }
 
 // PubkeyOfAccount 获取用户的账户公钥参数
@@ -99,6 +98,6 @@ type PubkeyOfAccount struct {
 }
 
 // GetPubkeyOfAccount 获取用户的账户公钥
-func GetPubkeyOfAccount(u *PubkeyOfAccount, c *Common, k *tscec.KeyPair) ([]byte, error) {
-	return send(GetPubkeyOfAccountURI, u, c, k)
+func GetPubkeyOfAccount(u *PubkeyOfAccount, c *Common, privateKey []byte) ([]byte, error) {
+	return send(GetPubkeyOfAccountURI, u, c, privateKey)
 }
