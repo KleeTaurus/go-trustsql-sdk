@@ -2,9 +2,10 @@ package trustsql
 
 import (
 	"encoding/base64"
-	"fmt"
 
+	"github.com/KleeTaurus/go-trustsql-sdk/identity"
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
+	"github.com/KleeTaurus/go-trustsql-sdk/tsiss"
 )
 
 const (
@@ -70,10 +71,29 @@ func (kp *KeyPair) VerifySignature(sig, data []byte) bool {
 	return tscec.Verify(kp.PublicKey, sig, data)
 }
 
-// AppendIss 共享信息新增/追加
-// TODO
-func (kp *KeyPair) AppendIss() {
-	fmt.Println("hello")
+// GetIssSignStr 共享信息新增/追加, 第一步获取待签名串
+// 注意: 留空sign字段
+func (kp *KeyPair) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
+	lintString := []byte(identity.Lint(nil, ia))
+	ia.MchSign = tscec.Sign(kp.PrivateKey, lintString[:])
+
+	signStr, err := tsiss.GetIssSignStr(AppendIssURI, ia)
+	if err != nil {
+		return "", err
+	}
+	return signStr, nil
+}
+
+// AppendIss 共享信息新增/追加, 第二步将signstr加入到参数ia中,再次请求接口
+func (kp *KeyPair) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error) {
+	lintString := []byte(identity.Lint(nil, ia))
+	ia.MchSign = tscec.Sign(kp.PrivateKey, lintString[:])
+
+	isr, err := tsiss.AppendIss(AppendIssURI, ia)
+	if err != nil {
+		return nil, err
+	}
+	return isr, nil
 }
 
 // QueryIss 共享信息查询
