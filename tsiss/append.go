@@ -8,13 +8,8 @@ import (
 	"net/http"
 )
 
-const (
-	// AppendIssURI 共享信息查询
-	AppendIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_append_v1.cgi"
-)
-
 // AppendIss 共享信息新增/追加
-func AppendIss(iss *IssAppend) (*IssAppendResponse, error) {
+func AppendIss(appendIssURI string, iss *IssAppend) (*IssAppendResponse, error) {
 	// 校验common是否符合标准
 	err := validate.Struct(iss)
 	if err != nil {
@@ -24,7 +19,7 @@ func AppendIss(iss *IssAppend) (*IssAppendResponse, error) {
 
 	log.Printf("trustsql append iss request data is %s", string(data))
 
-	req, err := http.NewRequest("POST", AppendIssURI, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", appendIssURI, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	if err != nil {
 		return nil, err

@@ -16,11 +16,6 @@ var (
 	validate *validator.Validate
 )
 
-const (
-	// QueryIssURI 共享信息查询
-	QueryIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_query_v1.cgi"
-)
-
 func init() {
 	client = &http.Client{
 		Timeout: 1 * time.Second,
@@ -29,7 +24,7 @@ func init() {
 }
 
 // QueryIss 共享信息查询
-func QueryIss(iss *IssQuery) (*IssResponse, error) {
+func QueryIss(queryIssURI string, iss *IssQuery) (*IssResponse, error) {
 	// 校验common是否符合标准
 	err := validate.Struct(iss)
 	if err != nil {
@@ -40,7 +35,7 @@ func QueryIss(iss *IssQuery) (*IssResponse, error) {
 	log.Printf("trustsql request data is %s", string(data))
 
 	// send http request
-	req, err := http.NewRequest("POST", QueryIssURI, bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", queryIssURI, bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	if err != nil {
 		return nil, err
