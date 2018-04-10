@@ -74,7 +74,7 @@ func (kp *KeyPair) VerifySignature(sig, data []byte) bool {
 // GetIssSignStr 共享信息新增/追加, 第一步获取待签名串
 // 注意: 留空sign字段
 func (kp *KeyPair) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
-	lintString := []byte(identity.Lint(nil, ia))
+	lintString := []byte(identity.Lint(nil, (*ia)))
 	ia.MchSign = tscec.Sign(kp.PrivateKey, lintString[:])
 
 	signStr, err := tsiss.GetIssSignStr(AppendIssURI, ia)
@@ -86,7 +86,7 @@ func (kp *KeyPair) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
 
 // AppendIss 共享信息新增/追加, 第二步将signstr加入到参数ia中,再次请求接口
 func (kp *KeyPair) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error) {
-	lintString := []byte(identity.Lint(nil, ia))
+	lintString := []byte(identity.Lint(nil, (*ia)))
 	ia.MchSign = tscec.Sign(kp.PrivateKey, lintString[:])
 
 	isr, err := tsiss.AppendIss(AppendIssURI, ia)
