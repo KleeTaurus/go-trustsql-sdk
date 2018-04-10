@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-// AppendIss 共享信息新增/追加
-func AppendIss(appendIssURI string, iss *IssAppend) (*IssAppendResponse, error) {
+// send 共享信息新增/追加
+func send(appendIssURI string, iss *IssAppend) ([]byte, error) {
 	// 校验common是否符合标准
 	err := validate.Struct(iss)
 	if err != nil {
@@ -31,6 +31,30 @@ func AppendIss(appendIssURI string, iss *IssAppend) (*IssAppendResponse, error) 
 	body, err := ioutil.ReadAll(resp.Body)
 	log.Printf("trustsql response body is %s", string(body))
 	_ = resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+// GetIssSignStr 共享信息新增/追加
+func GetIssSignStr(appendIssURI string, iss *IssAppend) (string, error) {
+	body, err := send(appendIssURI, iss)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO parse body to get sign_str
+	return string(body), nil
+}
+
+// AppendIss 共享信息新增/追加
+func AppendIss(appendIssURI string, iss *IssAppend) (*IssAppendResponse, error) {
+	body, err := send(appendIssURI, iss)
+	if err != nil {
+		return nil, err
+	}
 
 	issAppendResponse := IssAppendResponse{}
 	err = json.Unmarshal(body, &issAppendResponse)
