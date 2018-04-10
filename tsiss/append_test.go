@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const AppendIssTestURI = "http://39.107.26.141:8007/trustsql/v1.0/iss_append"
+
 func TestAppendIss(t *testing.T) {
 	issAppend := &IssAppend{
 		Version:     "1.0",
@@ -25,7 +27,7 @@ func TestAppendIss(t *testing.T) {
 		ChainID:  "xxx test chain id",
 		LedgerID: "xxx test ledger_id",
 	}
-	iss, err := AppendIss(issAppend)
+	iss, err := AppendIss(AppendIssTestURI, issAppend)
 	if err != nil {
 		t.Error(err)
 	}

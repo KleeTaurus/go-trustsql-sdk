@@ -7,6 +7,13 @@ import (
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 )
 
+const (
+	// AppendIssURI 共享信息查询
+	AppendIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_append_v1.cgi"
+	// QueryIssURI 共享信息查询
+	QueryIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_query_v1.cgi"
+)
+
 // KeyPair 公私钥对数据结构
 type KeyPair struct {
 	PrivateKey []byte
