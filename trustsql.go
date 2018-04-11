@@ -2,7 +2,6 @@ package trustsql
 
 import (
 	"encoding/base64"
-	"fmt"
 
 	"github.com/KleeTaurus/go-trustsql-sdk/identity"
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
@@ -37,8 +36,8 @@ func GenRandomPairkey() *Client {
 	return &client
 }
 
-// NewTrustSQLByPrivateKey 通过base64编码的私钥生成client
-func NewTrustSQLByPrivateKey(privateKey string) (*Client, error) {
+// NewClient 通过base64编码的私钥生成client
+func NewClient(privateKey string) (*Client, error) {
 	privKey, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		return nil, err
@@ -117,6 +116,13 @@ func (c *Client) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error
 }
 
 // QueryIss 共享信息查询
-func (c *Client) QueryIss() {
-	fmt.Println("hello")
+func (c *Client) QueryIss(iq *tsiss.IssQuery) (*tsiss.IssResponse, error) {
+	lintString := []byte(identity.Lint(nil, (*iq)))
+	iq.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
+
+	isr, err := tsiss.QueryIss(c.QueryIssURI, iq)
+	if err != nil {
+		return nil, err
+	}
+	return isr, nil
 }

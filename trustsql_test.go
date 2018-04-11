@@ -9,6 +9,7 @@ import (
 
 const (
 	issGetSignStrTestURI = "http://39.107.26.141:8007/trustsql/v1.0/iss_get_sign_str"
+	issQueryTestURI      = "http://39.107.26.141:8007/trustsql/v1.0/iss_query"
 )
 
 func TestGeneratePairkey(t *testing.T) {
@@ -34,7 +35,7 @@ func TestGeneratePairkey(t *testing.T) {
 }
 
 func TestGetIssSignStr(t *testing.T) {
-	client, err := NewTrustSQLByPrivateKey("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	client, err := NewClient("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	if err != nil {
 		t.Error("GeneratePairkeyByPrivateKey err")
 	}
@@ -72,5 +73,23 @@ func TestAppendIss(t *testing.T) {
 
 func TestQueryIss(t *testing.T) {
 	client := GenRandomPairkey()
-	client.QueryIss()
+	client.SetQueryIssURI(issQueryTestURI)
+
+	iq := tsiss.IssQuery{
+		Version:   "1.0",
+		SignType:  "ECDSA",
+		MchID:     "gbec7b7cece75c8a5",
+		MchSign:   "MEYCIQDCoCYth2zGer2Z/kliD11jRXGKqLqLNk/vo18js+CvRwIhANTQ3PbN9vj9YjmaB+rma2Sz0D+30WgZPOHAO9ysRsj1",
+		ChainID:   "xxxxxxxxxxxxxx",
+		LedgerID:  "xxxxxxxxxxxxxx",
+		Content:   map[string]interface{}{"owner": "ulegal"},
+		Notes:     map[string]interface{}{"extInfo": "default"},
+		PageNo:    "1",
+		PageLimit: "2",
+		Timestamp: "1503648096",
+	}
+	_, err := client.QueryIss(&iq)
+	if err != nil {
+		t.Error(err)
+	}
 }
