@@ -29,8 +29,14 @@ func send(appendIssURI string, iss *IssAppend) ([]byte, error) {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	log.Printf("trustsql response body is %s", string(body))
 	_ = resp.Body.Close()
+	log.Printf("trustsql response body is %s", string(body))
+	if err != nil {
+		return nil, err
+	}
+
+	// 检查返回值是否成功
+	err = responseUtil(body)
 	if err != nil {
 		return nil, err
 	}

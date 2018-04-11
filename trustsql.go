@@ -15,22 +15,29 @@ const (
 	QueryIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_query_v1.cgi"
 )
 
-// KeyPair 公私钥对数据结构
-type KeyPair struct {
-	PrivateKey []byte
-	PublicKey  []byte
+// Client 腾讯区块链sdk
+type Client struct {
+	PrivateKey   []byte
+	PublicKey    []byte
+	AppendIssURI string
+	QueryIssURI  string
 }
 
-// GeneratePairkey 生成公私钥对
-func GeneratePairkey() *KeyPair {
+// GenRandomPairkey 生成随机公私钥对
+func GenRandomPairkey() *Client {
 	privateKey, publicKey := tscec.NewKeyPair()
-	keyPair := KeyPair{privateKey, publicKey}
+	client := Client{
+		PrivateKey:   privateKey,
+		PublicKey:    publicKey,
+		AppendIssURI: AppendIssURI,
+		QueryIssURI:  QueryIssURI,
+	}
 
-	return &keyPair
+	return &client
 }
 
-// GeneratePairkeyByPrivateKey 通过base64编码的私钥生成KeyPair
-func GeneratePairkeyByPrivateKey(privateKey string) (*KeyPair, error) {
+// NewClient 通过base64编码的私钥生成client
+func NewClient(privateKey string) (*Client, error) {
 	privKey, err := base64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		return nil, err
@@ -39,45 +46,57 @@ func GeneratePairkeyByPrivateKey(privateKey string) (*KeyPair, error) {
 	if err != nil {
 		return nil, err
 	}
-	keyPair := KeyPair{
-		PrivateKey: privKey,
-		PublicKey:  pubKey,
+	client := Client{
+		PrivateKey:   privKey,
+		PublicKey:    pubKey,
+		AppendIssURI: AppendIssURI,
+		QueryIssURI:  QueryIssURI,
 	}
-	return &keyPair, nil
+	return &client, nil
+}
+
+// SetAppendIssURI 获取私钥的base64编码
+func (c *Client) SetAppendIssURI(appendIssURI string) {
+	c.AppendIssURI = appendIssURI
+}
+
+// SetQueryIssURI 获取私钥的base64编码
+func (c *Client) SetQueryIssURI(queryIssURI string) {
+	c.QueryIssURI = queryIssURI
 }
 
 // GetPrivateKey 获取私钥的base64编码
-func (kp *KeyPair) GetPrivateKey() string {
-	return base64.StdEncoding.EncodeToString(kp.PrivateKey)
+func (c *Client) GetPrivateKey() string {
+	return base64.StdEncoding.EncodeToString(c.PrivateKey)
 }
 
 // GetPublicKey 获取公钥的base64编码
-func (kp *KeyPair) GetPublicKey() string {
-	return base64.StdEncoding.EncodeToString(kp.PublicKey)
+func (c *Client) GetPublicKey() string {
+	return base64.StdEncoding.EncodeToString(c.PublicKey)
 }
 
 // GetAddrByPubkey 计算公钥对应的地址
-func (kp *KeyPair) GetAddrByPubkey() []byte {
-	return tscec.GenerateAddrByPubkey(kp.PublicKey)
+func (c *Client) GetAddrByPubkey() []byte {
+	return tscec.GenerateAddrByPubkey(c.PublicKey)
 }
 
 // SignString 对一个字符串进行签名（通常用于生成通讯方签名）
-func (kp *KeyPair) SignString(s string) string {
-	return tscec.Sign(kp.PrivateKey, []byte(s))
+func (c *Client) SignString(s string) string {
+	return tscec.Sign(c.PrivateKey, []byte(s))
 }
 
 // VerifySignature 对签名进行验证
-func (kp *KeyPair) VerifySignature(sig, data []byte) bool {
-	return tscec.Verify(kp.PublicKey, sig, data)
+func (c *Client) VerifySignature(sig, data []byte) bool {
+	return tscec.Verify(c.PublicKey, sig, data)
 }
 
 // GetIssSignStr 共享信息新增/追加, 第一步获取待签名串
 // 注意: 留空sign字段
-func (kp *KeyPair) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
+func (c *Client) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
 	lintString := []byte(identity.Lint(nil, (*ia)))
-	ia.MchSign = tscec.Sign(kp.PrivateKey, lintString[:])
+	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
 
-	signStr, err := tsiss.GetIssSignStr(AppendIssURI, ia)
+	signStr, err := tsiss.GetIssSignStr(c.AppendIssURI, ia)
 	if err != nil {
 		return "", err
 	}
@@ -85,11 +104,11 @@ func (kp *KeyPair) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
 }
 
 // AppendIss 共享信息新增/追加, 第二步将signstr加入到参数ia中,再次请求接口
-func (kp *KeyPair) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error) {
+func (c *Client) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error) {
 	lintString := []byte(identity.Lint(nil, (*ia)))
-	ia.MchSign = tscec.Sign(kp.PrivateKey, lintString[:])
+	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
 
-	isr, err := tsiss.AppendIss(AppendIssURI, ia)
+	isr, err := tsiss.AppendIss(c.AppendIssURI, ia)
 	if err != nil {
 		return nil, err
 	}
@@ -97,5 +116,13 @@ func (kp *KeyPair) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, err
 }
 
 // QueryIss 共享信息查询
-// TODO
-func (kp *KeyPair) QueryIss() {}
+func (c *Client) QueryIss(iq *tsiss.IssQuery) (*tsiss.IssResponse, error) {
+	lintString := []byte(identity.Lint(nil, (*iq)))
+	iq.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
+
+	isr, err := tsiss.QueryIss(c.QueryIssURI, iq)
+	if err != nil {
+		return nil, err
+	}
+	return isr, nil
+}

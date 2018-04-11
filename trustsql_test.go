@@ -4,42 +4,42 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/KleeTaurus/go-trustsql-sdk/identity"
-	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 	"github.com/KleeTaurus/go-trustsql-sdk/tsiss"
 )
 
 const (
 	issGetSignStrTestURI = "http://39.107.26.141:8007/trustsql/v1.0/iss_get_sign_str"
+	issQueryTestURI      = "http://39.107.26.141:8007/trustsql/v1.0/iss_query"
 )
 
 func TestGeneratePairkey(t *testing.T) {
-	keyPair := GeneratePairkey()
+	client := GenRandomPairkey()
 
 	/*
-		log.Printf("Private Key: %s, len: %d\n", base64Encode(keyPair.PrivateKey), len(keyPair.PrivateKey))
-		log.Printf("Public key : %s, len: %d\n", base64Encode(keyPair.PublicKey), len(keyPair.PublicKey))
-		log.Printf("Address    : %s, len: %d\n", keyPair.GetAddress(), len(keyPair.GetAddress()))
+		log.Printf("Private Key: %s, len: %d\n", base64Encode(c.PrivateKey), len(c.PrivateKey))
+		log.Printf("Public key : %s, len: %d\n", base64Encode(c.PublicKey), len(c.PublicKey))
+		log.Printf("Address    : %s, len: %d\n", c.GetAddrByPubkey(), len(c.GetAddrByPubkey()))
 	*/
 
-	if len(keyPair.PrivateKey) != 32 {
+	if len(client.PrivateKey) != 32 {
 		t.Errorf("Incorrect length of the private key, it should be 32 bytes\n")
 	}
 
-	if len(keyPair.PublicKey) != 33 {
+	if len(client.PublicKey) != 33 {
 		t.Errorf("Incorrect length of the public key, it should be 33 bytes\n")
 	}
 
-	if len(keyPair.GetAddrByPubkey()) != 34 && len(keyPair.GetAddrByPubkey()) != 33 {
+	if len(client.GetAddrByPubkey()) != 34 && len(client.GetAddrByPubkey()) != 33 {
 		t.Errorf("Incorrect length of the address, it should be 34 or 33 bytes\n")
 	}
 }
 
 func TestGetIssSignStr(t *testing.T) {
-	keyPair, err := GeneratePairkeyByPrivateKey("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+	client, err := NewClient("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 	if err != nil {
 		t.Error("GeneratePairkeyByPrivateKey err")
 	}
+	client.SetAppendIssURI(issGetSignStrTestURI)
 
 	ia := tsiss.IssAppend{
 		Version:  "1.0",
@@ -60,18 +60,36 @@ func TestGetIssSignStr(t *testing.T) {
 		PublicKey:  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 	}
 
-	lintString := []byte(identity.Lint(nil, ia))
-	ia.MchSign = tscec.Sign(keyPair.PrivateKey, lintString[:])
-
-	signStr, err := tsiss.GetIssSignStr(issGetSignStrTestURI, &ia)
+	signStr, err := client.GetIssSignStr(&ia)
 	if err != nil {
-		t.Error("GetIssSignStr err")
+		t.Errorf("GetIssSignStr failed %s", err)
 	}
 
 	fmt.Printf("signstr is: %+v\n", signStr)
 }
 
 func TestAppendIss(t *testing.T) {
-	// keyPair := GeneratePairkey()
-	// keyPair.AppendIss()
+}
+
+func TestQueryIss(t *testing.T) {
+	client := GenRandomPairkey()
+	client.SetQueryIssURI(issQueryTestURI)
+
+	iq := tsiss.IssQuery{
+		Version:   "1.0",
+		SignType:  "ECDSA",
+		MchID:     "gbec7b7cece75c8a5",
+		MchSign:   "MEYCIQDCoCYth2zGer2Z/kliD11jRXGKqLqLNk/vo18js+CvRwIhANTQ3PbN9vj9YjmaB+rma2Sz0D+30WgZPOHAO9ysRsj1",
+		ChainID:   "xxxxxxxxxxxxxx",
+		LedgerID:  "xxxxxxxxxxxxxx",
+		Content:   map[string]interface{}{"owner": "ulegal"},
+		Notes:     map[string]interface{}{"extInfo": "default"},
+		PageNo:    "1",
+		PageLimit: "2",
+		Timestamp: "1503648096",
+	}
+	_, err := client.QueryIss(&iq)
+	if err != nil {
+		t.Error(err)
+	}
 }
