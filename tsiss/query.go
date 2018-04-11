@@ -45,8 +45,14 @@ func QueryIss(queryIssURI string, iss *IssQuery) (*IssResponse, error) {
 		return nil, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	// log.Printf("trustsql response body is %s", string(body))
+	log.Printf("trustsql response body is %s", string(body))
 	_ = resp.Body.Close()
+
+	// 检查返回值是否成功
+	err = responseUtil(body)
+	if err != nil {
+		return nil, err
+	}
 
 	issResponse := IssResponse{}
 	err = json.Unmarshal(body, &issResponse)
