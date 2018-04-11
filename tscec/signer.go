@@ -13,13 +13,13 @@ import (
 // Sign 签名
 func Sign(privateKey []byte, data []byte) string {
 	secp256k1.Start()
+	defer secp256k1.Stop()
 	// privKey := PrivateKeyFromBytes(privateKey)
 	dataSHA256 := sha256.Sum256(data)
 
 	var dupPrivKey [32]byte
 	copy(dupPrivKey[:32], privateKey[:])
 	val, _ := secp256k1.Sign(dataSHA256, dupPrivKey, nil)
-	secp256k1.Stop()
 
 	// // DER encode
 	// b, err := asn1.Marshal(val)
@@ -40,6 +40,7 @@ func Sign(privateKey []byte, data []byte) string {
 // Verify 验证签名
 func Verify(pubkey, sig, data []byte) bool {
 	secp256k1.Start()
+	defer secp256k1.Stop()
 	dataSHA256 := sha256.Sum256(data)
 	return secp256k1.Verify(dataSHA256, sig, pubkey)
 }
