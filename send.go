@@ -1,4 +1,4 @@
-package identity
+package trustsql
 
 import (
 	"bytes"
@@ -9,19 +9,6 @@ import (
 
 	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
 )
-
-// const (
-// 	// RegisteUserURI 注册用户
-// 	RegisteUserURI = "http://39.107.26.141:8004/post"
-// 	// GetUserInfoURI 获取用户信息
-// 	GetUserInfoURI = "http://39.107.26.141:8004/post"
-// 	// RegisteAccountURI 创建用户账户
-// 	RegisteAccountURI = "http://39.107.26.141:8004/post"
-// 	// GetAccountsURI 获取用户的账户地址列表
-// 	GetAccountsURI = "http://39.107.26.141:8004/post"
-// 	// GetPubkeyOfAccountURI 获取用户的账户公钥
-// 	GetPubkeyOfAccountURI = "http://39.107.26.141:8004/post"
-// )
 
 func send(URI string, u interface{}, c *Common, privateKey []byte) ([]byte, error) {
 	data, err := json.Marshal(u)
