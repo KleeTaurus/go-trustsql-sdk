@@ -2,6 +2,7 @@ package trustsql
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -186,7 +187,7 @@ func (c *Client) QueryIss(iq *tsiss.IssQuery) (*tsiss.IssResponse, error) {
 }
 
 // RegisteUser 注册用户
-func (c *Client) RegisteUser(u *UserRegister, common *Common) ([]byte, error) {
+func (c *Client) RegisteUser(u *UserRegister, common *Common) (*UserRegisterResponse, error) {
 	body, err := send(c.registeUserURI, u, common, c.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -196,11 +197,17 @@ func (c *Client) RegisteUser(u *UserRegister, common *Common) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+
+	urr := &UserRegisterResponse{}
+	err = json.Unmarshal(body, urr)
+	if err != nil {
+		return nil, err
+	}
+	return urr, nil
 }
 
 // GetUserInfo 获取用户信息参数
-func (c *Client) GetUserInfo(u *UserInfo, common *Common) ([]byte, error) {
+func (c *Client) GetUserInfo(u *UserInfo, common *Common) (*UserInfoResponse, error) {
 	body, err := send(c.getUserInfoURI, u, common, c.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -210,11 +217,17 @@ func (c *Client) GetUserInfo(u *UserInfo, common *Common) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+
+	uir := &UserInfoResponse{}
+	err = json.Unmarshal(body, uir)
+	if err != nil {
+		return nil, err
+	}
+	return uir, nil
 }
 
 // RegisteAccount 创建用户账户
-func (c *Client) RegisteAccount(u *Account, common *Common) ([]byte, error) {
+func (c *Client) RegisteAccount(u *Account, common *Common) (*AccountResponse, error) {
 	body, err := send(c.registeAccountURI, u, common, c.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -224,11 +237,17 @@ func (c *Client) RegisteAccount(u *Account, common *Common) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+
+	ar := &AccountResponse{}
+	err = json.Unmarshal(body, ar)
+	if err != nil {
+		return nil, err
+	}
+	return ar, nil
 }
 
 // GetAccounts 获取用户的账户地址列表
-func (c *Client) GetAccounts(u *Accounts, common *Common) ([]byte, error) {
+func (c *Client) GetAccounts(u *Accounts, common *Common) (*AccountsResponse, error) {
 	body, err := send(c.getAccountsURI, u, common, c.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -238,11 +257,17 @@ func (c *Client) GetAccounts(u *Accounts, common *Common) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+
+	ar := &AccountsResponse{}
+	err = json.Unmarshal(body, ar)
+	if err != nil {
+		return nil, err
+	}
+	return ar, nil
 }
 
 // GetPubkeyOfAccount 获取用户的账户公钥
-func (c *Client) GetPubkeyOfAccount(u *PubkeyOfAccount, common *Common) ([]byte, error) {
+func (c *Client) GetPubkeyOfAccount(u *PubkeyOfAccount, common *Common) (*PubkeyOfAccountResponse, error) {
 	body, err := send(c.getPubkeyOfAccountURI, u, common, c.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -252,5 +277,11 @@ func (c *Client) GetPubkeyOfAccount(u *PubkeyOfAccount, common *Common) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	return body, nil
+
+	poar := &PubkeyOfAccountResponse{}
+	err = json.Unmarshal(body, poar)
+	if err != nil {
+		return nil, err
+	}
+	return poar, nil
 }

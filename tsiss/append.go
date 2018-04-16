@@ -44,15 +44,22 @@ func send(appendIssURI string, iss *IssAppend) ([]byte, error) {
 	return body, nil
 }
 
+type signStr struct {
+	SignStr string `json:"sign_str"`
+}
+
 // GetIssSignStr 共享信息新增/追加
 func GetIssSignStr(appendIssURI string, iss *IssAppend) (string, error) {
 	body, err := send(appendIssURI, iss)
 	if err != nil {
 		return "", err
 	}
-
-	// TODO parse body to get sign_str
-	return string(body), nil
+	s := signStr{}
+	err = json.Unmarshal(body, &s)
+	if err != nil {
+		return "", err
+	}
+	return s.SignStr, nil
 }
 
 // AppendIss 共享信息新增/追加
