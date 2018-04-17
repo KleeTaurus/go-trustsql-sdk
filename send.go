@@ -18,7 +18,7 @@ func send(URI string, u interface{}, c *Common, privateKey []byte) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
-	c.Sign = tscec.Sign(privateKey, []byte(sign))
+	c.Sign = tscec.Sign(privateKey, []byte(sign), false)
 
 	reqData, err := json.Marshal(c)
 	if err != nil {

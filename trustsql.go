@@ -140,8 +140,8 @@ func (c *Client) GetAddrByPubkey() []byte {
 }
 
 // SignString 对一个字符串进行签名（通常用于生成通讯方签名）
-func (c *Client) SignString(s string) string {
-	return tscec.Sign(c.PrivateKey, []byte(s))
+func (c *Client) SignString(s string, isHash bool) string {
+	return tscec.Sign(c.PrivateKey, []byte(s), isHash)
 }
 
 // VerifySignature 对签名进行验证
@@ -153,7 +153,7 @@ func (c *Client) VerifySignature(sig, data []byte) bool {
 // 注意: 留空sign字段
 func (c *Client) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
 	lintString := []byte(Lint(nil, (*ia)))
-	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
+	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:], false)
 
 	signStr, err := tsiss.GetIssSignStr(c.appendIssURI, ia)
 	if err != nil {
@@ -165,7 +165,7 @@ func (c *Client) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
 // AppendIss 共享信息新增/追加, 第二步将signstr加入到参数ia中,再次请求接口
 func (c *Client) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error) {
 	lintString := []byte(Lint(nil, (*ia)))
-	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
+	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:], false)
 
 	isr, err := tsiss.AppendIss(c.appendIssURI, ia)
 	if err != nil {
@@ -177,7 +177,7 @@ func (c *Client) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error
 // QueryIss 共享信息查询
 func (c *Client) QueryIss(iq *tsiss.IssQuery) (*tsiss.IssResponse, error) {
 	lintString := []byte(Lint(nil, (*iq)))
-	iq.MchSign = tscec.Sign(c.PrivateKey, lintString[:])
+	iq.MchSign = tscec.Sign(c.PrivateKey, lintString[:], false)
 
 	isr, err := tsiss.QueryIss(c.queryIssURI, iq)
 	if err != nil {
