@@ -30,6 +30,9 @@ func Lint(v interface{}, c interface{}) string {
 		if signMap[keys[k]] == "" {
 			continue
 		}
+		if keys[k] == "mch_sign" {
+			continue
+		}
 
 		if !first {
 			lintString = lintString + "&" + keys[k] + "=" + signMap[keys[k]]

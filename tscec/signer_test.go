@@ -13,7 +13,7 @@ func TestSign(t *testing.T) {
 	fmt.Printf("pubkey:    %s\n", base64.StdEncoding.EncodeToString(publicKey))
 
 	signMsg := "hello world, you are welcome"
-	ret := Sign(privateKey, []byte(signMsg))
+	ret := Sign(privateKey, []byte(signMsg), false)
 
 	fmt.Printf("data:      %s\n", signMsg)
 	fmt.Printf("signature: %s\n", ret)

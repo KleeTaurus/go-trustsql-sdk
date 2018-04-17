@@ -11,11 +11,15 @@ import (
 )
 
 // Sign 签名
-func Sign(privateKey []byte, data []byte) string {
+func Sign(privateKey []byte, data []byte, isHash bool) string {
 	secp256k1.Start()
 	defer secp256k1.Stop()
-	// privKey := PrivateKeyFromBytes(privateKey)
-	dataSHA256 := sha256.Sum256(data)
+	var dataSHA256 [32]byte
+	if !isHash {
+		dataSHA256 = sha256.Sum256(data)
+	} else {
+		copy(dataSHA256[:32], data[:])
+	}
 
 	var dupPrivKey [32]byte
 	copy(dupPrivKey[:32], privateKey[:])
