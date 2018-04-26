@@ -2,6 +2,7 @@ package trustsql
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -164,10 +165,12 @@ func (c *Client) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return signStr, nil
+	signStrBytes, _ := hex.DecodeString(signStr)
+
+	return string(signStrBytes), nil
 }
 
-// AppendIss 共享信息新增/追加, 第二步将signstr加入到参数ia中,再次请求接口
+// AppendIss 共享信息新增/追加, 第二步将已签名的signstr加入到参数ia中,再次请求接口
 func (c *Client) AppendIss(ia *tsiss.IssAppend) (*tsiss.IssAppendResponse, error) {
 	lintString := []byte(Lint(nil, (*ia)))
 	ia.MchSign = tscec.Sign(c.PrivateKey, lintString[:], false)

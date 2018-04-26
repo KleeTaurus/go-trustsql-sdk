@@ -8,7 +8,7 @@ GoTrustSQL
 
 ## 概述
 
-该 SDK 实现了底层密钥对生成、地址生成、签名/验签等基础功能，并对 TrustSQL 提供的三类（数字资产/信息共享/身份管理） API 接口进行了封装。
+该 SDK 实现了底层密钥对生成、地址生成、签名/验签等基础功能，并对 TrustSQL 提供的三类（信息共享/身份管理） API 接口进行了封装。
 
 ## 特性
 
@@ -29,76 +29,47 @@ SDK API 接口
 下列示例演示了该 SDK 的基本使用方法。
 
 ```go
-package trustsql
+func SendToTrustSQL(content map[string]interface{}) (*tsiss.IssAppendResponse, error) {
+    privateKey := "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    client, _ := trustsql.NewClient(privateKey)
+    client.SetIssRequestTimeout(5 * time.Second)
+    //testURI := ""
+    //client.SetAppendIssURI(testURI)
+    accountAddr := client.GetAddrByPubkey()
+    pubKey := client.GetPublicKey()
+    issAppend := &tsiss.IssAppend{
+        Version:  "1.0",
+        SignType: "ECDSA",
+        MchID:    "gbxxxxxxxxxxxxxxx",
+        //MchSign:     "",
+        Account:    string(accountAddr),
+        CommitTime: time.Now().Format("2006-01-02 15:04:05"),
+        //Content:    map[string]interface{}{"c": "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"},
+        Content: content,
+        InfoKey: bson.NewObjectId().Hex(),
+        //InfoKey:     "1242123jjj",
+        InfoVersion: "1",
+        State:       "0",
+        Notes:       map[string]interface{}{"notes": "comments"},
+        PublicKey:   pubKey,
+        Sign:        "",
+        ChainID:     "ch_tencent_test",
+        LedgerID:    "ld_tencent_iss",
+    }
+    signStr, err := client.GetIssSignStr(issAppend)
+    if err != nil {
+        fmt.Printf("get issSignStr error: %s\n", err)
+        return nil, err
+    }
 
-import (
-	"encoding/base64"
-	"fmt"
-
-	"github.com/KleeTaurus/go-trustsql-sdk/tscec"
-)
-
-const (
-	// AppendIssURI 共享信息查询
-	AppendIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_append_v1.cgi"
-	// QueryIssURI 共享信息查询
-	QueryIssURI = "https://baas.trustsql.qq.com/cgi-bin/v1.0/trustsql_iss_query_v1.cgi"
-)
-
-// KeyPair 公私钥对数据结构
-type KeyPair struct {
-	PrivateKey []byte
-	PublicKey  []byte
-}
-
-// GeneratePairkey 生成公私钥对
-func GeneratePairkey() *KeyPair {
-	privateKey, publicKey := tscec.NewKeyPair()
-	keyPair := KeyPair{privateKey, publicKey}
-
-	return &keyPair
-}
-
-// GeneratePairkeyByPrivateKey 通过base64编码的私钥生成KeyPair
-func GeneratePairkeyByPrivateKey(privateKey string) (*KeyPair, error) {
-	privKey, err := base64.StdEncoding.DecodeString(privateKey)
-	if err != nil {
-		return nil, err
-	}
-	pubKey, err := tscec.GeneratePubkeyByPrvkey(privKey)
-	if err != nil {
-		return nil, err
-	}
-	keyPair := KeyPair{
-		PrivateKey: privKey,
-		PublicKey:  pubKey,
-	}
-	return &keyPair, nil
-}
-
-// GetPrivateKey 获取私钥的base64编码
-func (kp *KeyPair) GetPrivateKey() string {
-	return base64.StdEncoding.EncodeToString(kp.PrivateKey)
-}
-
-// GetPublicKey 获取公钥的base64编码
-func (kp *KeyPair) GetPublicKey() string {
-	return base64.StdEncoding.EncodeToString(kp.PublicKey)
-}
-
-// GetAddrByPubkey 计算公钥对应的地址
-func (kp *KeyPair) GetAddrByPubkey() []byte {
-	return tscec.GenerateAddrByPubkey(kp.PublicKey)
-}
-
-// SignString 对一个字符串进行签名（通常用于生成通讯方签名）
-func (kp *KeyPair) SignString(s string) string {
-	return tscec.Sign(kp.PrivateKey, []byte(s))
-}
-
-// VerifySignature 对签名进行验证
-func (kp *KeyPair) VerifySignature(sig, data []byte) bool {
-	return tscec.Verify(kp.PublicKey, sig, data)
+    issAppend.Sign = client.SignString(signStr, true)
+    appendRes, err := client.AppendIss(issAppend)
+    if err != nil {
+        fmt.Printf("append error: %s\n", err)
+        return nil, err
+    }
+    //fmt.Printf("appendRes: %+v\n", appendRes)
+    return appendRes, nil
 }
 
 ```
