@@ -90,6 +90,11 @@ func (c *Client) VerifySignature(sig, data []byte) bool {
 	return tscec.Verify(c.PublicKey, sig, data)
 }
 
+// SetIssRequestTimeout 设置Iss的请求超时时间
+func (c *Client) SetIssRequestTimeout(timeout time.Duration) {
+	tsiss.SetRequestTimeout(timeout)
+}
+
 // GetIssSignStr 共享信息新增/追加, 第一步获取待签名串
 // 注意: 留空sign字段
 func (c *Client) GetIssSignStr(ia *tsiss.IssAppend) (string, error) {
