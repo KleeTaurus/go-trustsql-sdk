@@ -23,6 +23,11 @@ func init() {
 	validate = validator.New()
 }
 
+// 设置http请求过期时间
+func SetRequestTimeout(timeout time.Duration) {
+	client.Timeout = timeout
+}
+
 // QueryIss 共享信息查询
 func QueryIss(queryIssURI string, iss *IssQuery) (*IssResponse, error) {
 	// 校验common是否符合标准
