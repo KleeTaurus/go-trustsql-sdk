@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "tmTwnJZMpwYat5xtkhAJCGxEf3w=",
+			"path": "github.com/btcsuite/btcd/btcec",
+			"revision": "2be2f12b358dc57d70b8f501b00be450192efbc3",
+			"revisionTime": "2018-02-20T00:36:29Z"
+		},
+		{
 			"checksumSHA1": "uC0/YlX5RUmxgBWUtR8J2QBWEIo=",
 			"path": "github.com/go-playground/locales",
 			"revision": "e4cbcb5d0652150d40ad0646651076b6bd2be4f6",

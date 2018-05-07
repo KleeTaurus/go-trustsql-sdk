@@ -5,10 +5,10 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
-	"errors"
 	"log"
 
-	secp256k1 "github.com/toxeus/go-secp256k1"
+	"github.com/btcsuite/btcd/btcec"
+
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -35,20 +35,15 @@ func NewKeyPair() ([]byte, []byte) {
 }
 
 // GeneratePubkeyByPrvkey 根据私钥计算公钥
-func GeneratePubkeyByPrvkey(privateKey []byte) ([]byte, error) {
-	var dupPrivateKey [privateKeyLen]byte
-	copy(dupPrivateKey[:], privateKey[:privateKeyLen])
-
-	secp256k1.Start()
-	// TODO 改成可配置
-	// 此处生成压缩公钥
-	publicKey, success := secp256k1.Pubkey_create(dupPrivateKey, true)
-	if !success {
-		return nil, errors.New("failed to create public key from the provided private key")
-	}
-	secp256k1.Stop()
-
-	return publicKey, nil
+func GeneratePubkeyByPrvkey(p []byte) ([]byte, error) {
+	curve := btcec.S256()
+	_, publicKey := btcec.PrivKeyFromBytes(curve, p)
+	// publicKey := privateKey.PubKey()
+	// fmt.Println("-----------------------")
+	// fmt.Println(privateKey.PubKey())
+	// fmt.Println("-----------------------")
+	// return publicKey.SerializeUncompressed(), nil
+	return publicKey.SerializeCompressed(), nil
 }
 
 // GenerateAddrByPubkey 计算公钥对应的地址
