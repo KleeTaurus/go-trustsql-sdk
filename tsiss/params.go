@@ -86,6 +86,7 @@ type IssAppend struct {
 	Account    string `json:"account,omitempty" validate:"required"`     // 记录方地址,查询符合此记录方地址的记录
 	PublicKey  string `json:"public_key" validate:"required"`            // 记录方公钥
 	Sign       string `json:"sign,omitempty"`                            // 记录方签名,使用SDK函数IssSign进行签名
+	TimeStamp  int64  `json:"timestamp" validate:"required"`             // 当前unix时间戳(秒)，与服务器时间相差过远会返回失败
 }
 
 // IssAppendResponse 共享信息新增/追加, 返回参数

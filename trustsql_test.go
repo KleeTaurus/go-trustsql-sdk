@@ -3,6 +3,7 @@ package trustsql
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/KleeTaurus/go-trustsql-sdk/tsiss"
 )
@@ -58,6 +59,7 @@ func TestGetIssSignStr(t *testing.T) {
 		CommitTime: "2018-04-04 16:47:31",
 		Account:    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 		PublicKey:  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+		TimeStamp:  time.Now().Unix(),
 	}
 
 	signStr, err := client.GetIssSignStr(&ia)
