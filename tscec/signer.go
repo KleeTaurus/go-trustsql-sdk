@@ -1,6 +1,7 @@
 package tscec
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"github.com/btcsuite/btcd/btcec"
@@ -15,10 +16,12 @@ func Sign(pkBytes []byte, data []byte, isHash bool) string {
 	if !isHash {
 		messageHash := chainhash.DoubleHashB(data)
 		signature, _ := privKey.Sign(messageHash)
-		return string(signature.Serialize())
+		// return string(signature.Serialize())
+		return string(base64.StdEncoding.EncodeToString(signature.Serialize()))
 	} else {
 		signature, _ := privKey.Sign(data)
-		return string(signature.Serialize())
+		// return string(signature.Serialize())
+		return string(base64.StdEncoding.EncodeToString(signature.Serialize()))
 	}
 
 	// // Serialize and display the signature.
