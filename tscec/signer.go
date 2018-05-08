@@ -1,32 +1,24 @@
 package tscec
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 
 	"github.com/btcsuite/btcd/btcec"
-	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )
 
 // Sign 签名
 func Sign(pkBytes []byte, data []byte, isHash bool) string {
 	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), pkBytes)
 
-	// Sign a message using the private key.
 	if !isHash {
-		messageHash := chainhash.DoubleHashB(data)
-		signature, _ := privKey.Sign(messageHash)
-		// return string(signature.Serialize())
-		return string(base64.StdEncoding.EncodeToString(signature.Serialize()))
-	} else {
-		signature, _ := privKey.Sign(data)
-		// return string(signature.Serialize())
-		return string(base64.StdEncoding.EncodeToString(signature.Serialize()))
+		dataHash := sha256.Sum256(data)
+		copy(data[:], dataHash[:])
 	}
 
-	// // Serialize and display the signature.
-	// fmt.Printf("Serialized Signature: %x\n", signature.Serialize())
-	// return string(signature.Serialize())
+	signature, _ := privKey.Sign(data)
+	return string(base64.StdEncoding.EncodeToString(signature.Serialize()))
 }
 
 // Verify 验证签名
