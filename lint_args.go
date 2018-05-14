@@ -67,7 +67,11 @@ func getCheckString(m *map[string]string, v reflect.Value) {
 			}
 		case reflect.Map:
 			{
-				value, err := json.Marshal(v.Field(i).Interface().(map[string]interface{}))
+				mapField := v.Field(i).Interface().(map[string]interface{})
+				if mapField == nil {
+					continue
+				}
+				value, err := json.Marshal(mapField)
 				if err != nil {
 					// TODO
 					fmt.Println(err)
